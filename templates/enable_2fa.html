@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+
+{% block title %}Enable Two-Factor Auth{% endblock %}
+
+{% block content %}
+<h2 class="mb-3">Enable Two-Factor Authentication</h2>
+
+<p>Scan the QR code below in Google Authenticator (or any TOTP app).  
+If you can’t scan, enter the 16-character code manually.</p>
+
+<div class="text-center mb-3">
+  <img src="data:image/png;base64,{{ qr_b64 }}" alt="QR Code">
+</div>
+
+<p class="text-center mb-4"><code>{{ secret }}</code></p>
+
+<form method="post" class="text-center">
+  <button class="btn btn-success">Finish &amp; Activate</button>
+</form>
+{% endblock %}

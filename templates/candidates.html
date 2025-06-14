@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% block title %}Candidate Matches{% endblock %}
+
+{% block content %}
+<h2>Candidates vs. Your Jobs</h2>
+
+<table class="table table-bordered align-middle">
+  <thead class="table-light">
+    <tr>
+      <th>Candidate&nbsp;ID</th>
+      <th>CV</th>
+      {% for job in jobs %}
+        <th>{{ job.title }}<br><small>{{ job.min_experience }} yr / {{ job.education_required }}</small></th>
+      {% endfor %}
+      <th>Best&nbsp;Fit</th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for prof, score_map, best in rows %}
+      <tr>
+        <td>{{ prof.user_id }}</td>
+
+        <!-- CV download column -->
+        <td>
+          {% if prof.cv_path %}
+            <a href="/static/uploads/{{ prof.cv_path.split('/')[-1] }}" target="_blank"
+               class="btn btn-sm btn-outline-secondary">Download CV</a>
+          {% else %}
+            <span class="text-muted">N/A</span>
+          {% endif %}
+        </td>
+
+        {% for job in jobs %}
+          {% set s = score_map[job.id] %}
+          <td class="{% if s>=75 %}table-success{% elif s>=40 %}table-warning{% else %}table-danger{% endif %}">
+            {{ s }}%
+          </td>
+        {% endfor %}
+
+        <td><strong>{{ best }}%</strong></td>
+        <td>
+          <a href="{{ url_for('chat', uid=prof.user_id) }}"
+             class="btn btn-sm btn-outline-primary">Message</a>
+        </td>
+      </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endblock %}

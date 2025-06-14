@@ -1,0 +1,34 @@
+{% extends 'base.html' %}
+{% block title %}Build CV{% endblock %}
+{% block content %}
+<h2>Create a Custom-Styled CV</h2>
+<form method="post" enctype="multipart/form-data" class="mx-auto" style="max-width:650px;">
+
+  <div class="row g-3">
+    <div class="col-md-6"><input class="form-control" name="name"  placeholder="Full Name" required></div>
+    <div class="col-md-6"><input class="form-control" name="email" placeholder="Email" required></div>
+    <div class="col-md-6"><input class="form-control" name="phone" placeholder="Phone" required></div>
+
+    <div class="col-md-3">
+      <label class="form-label">Text color</label>
+      <input type="color" name="text_color" value="#000000" class="form-control form-control-color">
+    </div>
+    <div class="col-md-3">
+      <label class="form-label">Background</label>
+      <input type="color" name="bg_color"   value="#ffffff" class="form-control form-control-color">
+    </div>
+  </div>
+
+  <div class="mb-3 mt-3"><textarea class="form-control" name="summary" rows="3" placeholder="Professional summary" required></textarea></div>
+  <div class="mb-3"><input class="form-control" name="skills" placeholder="Skills (comma-separated)" required></div>
+  <div class="mb-3"><textarea class="form-control" name="experience" rows="4" placeholder="Experience details" required></textarea></div>
+  <div class="mb-3"><textarea class="form-control" name="education" rows="3" placeholder="Education details" required></textarea></div>
+
+  <div class="mb-3">
+    <label class="form-label">Profile photo (optional)</label>
+    <input type="file" name="photo" accept="image/*" class="form-control">
+  </div>
+
+  <button class="btn btn-success w-100">Generate PDF CV</button>
+</form>
+{% endblock %}

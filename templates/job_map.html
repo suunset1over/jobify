@@ -1,0 +1,24 @@
+{% extends 'base.html' %}
+{% block title %}Jobs Map{% endblock %}
+{% block content %}
+<h2 class="mb-3">Open Vacancies by City</h2>
+<div id="map" style="height:500px;"></div>
+
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+  const map = L.map('map').setView([20, 0], 2);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 6 }).addTo(map);
+
+  const markers = {{ markers|tojson }};
+  markers.forEach(([city,count])=>{
+    fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(city)}`)
+      .then(r=>r.json()).then(res=>{
+        if(res[0]){
+          const {lat,lon} = res[0];
+          L.marker([lat,lon]).addTo(map).bindPopup(`${city}: ${count} job(s)`);
+        }
+      });
+  });
+</script>
+{% endblock %}

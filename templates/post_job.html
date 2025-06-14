@@ -1,0 +1,57 @@
+{% extends 'base.html' %}
+{% block title %}{{ 'Edit' if offer else 'Post' }} Job Offer{% endblock %}
+{% block content %}
+<h2>{{ 'Edit' if offer else 'Post a' }} Job Offer</h2>
+
+<form method="post"
+      class="mx-auto"
+      style="max-width:600px;"
+      action="{% if offer %}{{ url_for('edit_job', offer_id=offer.id) }}{% else %}{{ url_for('post_job') }}{% endif %}">
+  <div class="mb-3">
+    <label class="form-label">Title</label>
+    <input type="text" name="title" class="form-control" required
+           value="{{ offer.title if offer else '' }}">
+  </div>
+  <div class="mb-3">
+    <label class="form-label">Description</label>
+    <textarea name="description" class="form-control" rows="4" required>{{ offer.description if offer else '' }}</textarea>
+  </div>
+  <div class="mb-3">
+    <label class="form-label">Required Skills (comma-separated)</label>
+    <input type="text" name="required_skills" class="form-control" required
+           value="{{ offer.required_skills if offer else '' }}">
+  </div>
+  <div class="mb-3">
+    <label class="form-label">Minimum Experience (years)</label>
+    <input type="number" name="min_experience" class="form-control" min="0" required
+           value="{{ offer.min_experience if offer else 0 }}">
+  </div>
+  <div class="mb-3">
+    <label class="form-label">Education Required</label>
+    <input type="text" name="education_required" class="form-control" required
+           value="{{ offer.education_required if offer else '' }}">
+  </div>
+<div class="row g-2">
+  <div class="col-md-6">
+    <label class="form-label">Country</label>
+    <input class="form-control" name="country" value="{{ offer.country if offer else '' }}" required>
+  </div>
+  <div class="col-md-6">
+    <label class="form-label">City</label>
+    <input class="form-control" name="city" value="{{ offer.city if offer else '' }}" required>
+  </div>
+  <div class="col-md-12">
+    <label class="form-label">Category</label>
+    <select name="category" class="form-select">
+      {% for c in categories %}
+        <option value="{{ c }}" {% if offer and offer.category==c %}selected{% endif %}>{{ c }}</option>
+      {% endfor %}
+    </select>
+  </div>
+</div>
+
+  <button type="submit" class="btn btn-success w-100">
+    {{ 'Update Job' if offer else 'Post Job' }}
+  </button>
+</form>
+{% endblock %}

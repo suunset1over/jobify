@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+{% block title %}How Friendly Are You at Work? – Quiz{% endblock %}
+
+{% block content %}
+<div class="bg-light rounded-3 p-4 mb-5">
+  <h1 class="display-5 fw-bold">Quiz: How Friendly Are You at Work?</h1>
+  <p class="fs-5 mb-0">
+    Take 5 minutes to discover your “office-friend” type and get a fun description of your team vibe.
+  </p>
+</div>
+
+<h2>Instructions</h2>
+<p class="mb-4">
+  Read each question, choose one answer, then add up your points. 
+  <em>(The quiz is purely for fun and self-reflection—no right or wrong!)</em>
+</p>
+
+<!-- Question 1 -->
+<h4>1. If your friendship were a movie, which title fits?</h4>
+<ul>
+  <li>A. “Just One More Coffee…” — 4 pts</li>
+  <li>B. “Infinite Conversations” — 3 pts</li>
+  <li>C. “Meme Masters” — 2 pts</li>
+  <li>D. “Simply Grateful” — 1 pt</li>
+</ul>
+
+<!-- Question 2 -->
+<h4>2. How often do you DM non-work content to your colleague?</h4>
+<ul>
+  <li>A. Daily—memes, videos, horoscopes! — 4 pts</li>
+  <li>B. Every great meme goes straight to them — 3 pts</li>
+  <li>C. Only if it really resonates — 2 pts</li>
+  <li>D. Rarely, but always on point — 1 pt</li>
+</ul>
+
+<!-- Question 3 -->
+<h4>3. Morning all-hands meeting—what’s your mood?</h4>
+<ul>
+  <li>A. Pumped! They saved me a seat — 4 pts</li>
+  <li>B. Positive—and we’ll debrief right after — 3 pts</li>
+  <li>C. Meh, I’ll sit quietly in the back — 2 pts</li>
+  <li>D. Can I join online instead? — 1 pt</li>
+</ul>
+
+<!-- Question 4 -->
+<h4>4. Company party: “Movie/M cartoon character” theme. Your costume?</h4>
+<ul>
+  <li>A. Iconic duo—full vintage parody — 4 pts</li>
+  <li>B. Recently discussed indie-film brothers — 3 pts</li>
+  <li>C. Whole team dresses prom-style, like a US sitcom — 2 pts</li>
+  <li>D. Solo as my latest binge-series hero — 1 pt</li>
+</ul>
+
+<!-- Question 5 -->
+<h4>5. Which statement would you love to hear?</h4>
+<ul>
+  <li>A. “No TikTok from you—day wasted!” — 4 pts</li>
+  <li>B. “Office isn’t the same without you” — 3 pts</li>
+  <li>C. “I feel there’s a real human beside me” — 2 pts</li>
+  <li>D. “You always know the right words” — 1 pt</li>
+</ul>
+
+<hr>
+
+<h3>Results</h3>
+<ul>
+  <li><strong>6–10 pts – Quiet Backbone</strong><br>
+      You offer calm, steady support. The team knows you’ve got their backs.</li>
+  <li><strong>11–15 pts – Soulful Conversationalist</strong><br>
+      Warm and sociable; coffee breaks with you feel like mini therapy.</li>
+  <li><strong>16–20 pts – Charisma Champion</strong><br>
+      You light up the office—energy and jokes flow wherever you go.</li>
+  <li><strong>21–24 pts – Meme Powerhouse</strong><br>
+      A living legend! Your memes are corporate lore and morale fuel.</li>
+</ul>
+
+<p class="text-muted fs-6 mt-4">
+  © {{ 2025 }} Jobify.ro – Created for entertainment purposes.
+</p>
+{% endblock %}

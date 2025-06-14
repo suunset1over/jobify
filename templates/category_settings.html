@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block title %}Category Settings{% endblock %}
+
+{% block content %}
+<h2 class="mb-3">Category Settings</h2>
+
+<form method="post">
+  <div class="mb-3">
+    <p>Select the job categories you’re interested in:</p>
+    {% for cat in categories %}
+      <div class="form-check">
+        <input 
+          class="form-check-input" 
+          type="checkbox" 
+          name="categories" 
+          value="{{ cat }}" 
+          id="cat-{{ loop.index }}"
+          {% if current_user.preferred_categories and cat in current_user.preferred_categories %}checked{% endif %}>
+        <label class="form-check-label" for="cat-{{ loop.index }}">
+          {{ cat }}
+        </label>
+      </div>
+    {% endfor %}
+  </div>
+
+  <button type="submit" class="btn btn-primary">Save Preferences</button>
+</form>
+{% endblock %}

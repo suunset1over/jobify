@@ -1,0 +1,109 @@
+{% extends "base.html" %}
+{% block title %}Jobs{% endblock %}
+
+{% block content %}
+<h2 class="mb-3">Open Vacancies</h2>
+
+<!-- ──── Filter Form ──── -->
+<form class="row g-2 mb-4" method="get">
+  <div class="col-md-4">
+    <input class="form-control" name="q"   value="{{ query }}" placeholder="Search title">
+  </div>
+  <div class="col-md-3">
+    <input class="form-control" name="city" value="{{ filter_city }}" placeholder="City">
+  </div>
+  <div class="col-md-3">
+    <select name="cat" class="form-select">
+      <option value="">All Categories</option>
+      {% for c in categories %}
+        <option value="{{ c }}" {% if filter_cat == c %}selected{% endif %}>{{ c }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  <div class="col-md-2">
+    <button class="btn btn-primary w-100">Filter</button>
+  </div>
+</form>
+
+<!-- ──── Mini Map ──── -->
+<div class="card mb-4">
+  <div class="card-body">
+    <h5 class="card-title">Jobs by City</h5>
+    <div id="miniMap" style="height:300px;"></div>
+  </div>
+</div>
+
+<!-- ──── Job Cards ──── -->
+{% for job in pagination.items %}
+  <div class="card mb-3">
+    <div class="card-body">
+      <h5 class="card-title">{{ job.title }}</h5>
+      <p class="card-text">{{ job.description }}</p>
+
+      <p class="mb-1"><strong>Location:</strong> {{ job.city }}, {{ job.country }}</p>
+      <p class="mb-1"><strong>Category:</strong> {{ job.category }}</p>
+      <p class="mb-1"><strong>Experience:</strong> {{ job.min_experience }} yr &nbsp;|&nbsp;
+         <strong>Education:</strong> {{ job.education_required }}</p>
+
+      <a href="{{ url_for('apply_job', job_id=job.id) }}" class="btn btn-primary">Apply</a>
+    </div>
+  </div>
+{% else %}
+  <p>No jobs found.</p>
+{% endfor %}
+
+<!-- ──── Pagination ──── -->
+<nav aria-label="Page">
+  <ul class="pagination">
+    {% if pagination.has_prev %}
+      <li class="page-item">
+        <a class="page-link" href="{{ url_for('job_list', page=pagination.prev_num,
+                                              q=query, city=filter_city, cat=filter_cat) }}">
+          « Prev
+        </a>
+      </li>
+    {% else %}<li class="page-item disabled"><span class="page-link">« Prev</span></li>{% endif %}
+
+    <li class="page-item disabled"><span class="page-link">
+      Page {{ pagination.page }} / {{ pagination.pages }}
+    </span></li>
+
+    {% if pagination.has_next %}
+      <li class="page-item">
+        <a class="page-link" href="{{ url_for('job_list', page=pagination.next_num,
+                                              q=query, city=filter_city, cat=filter_cat) }}">
+          Next »
+        </a>
+      </li>
+    {% else %}<li class="page-item disabled"><span class="page-link">Next »</span></li>{% endif %}
+  </ul>
+</nav>
+
+<!-- ──── Leaflet Assets ──── -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+<script>
+  // Initialize the mini map
+  const map = L.map('miniMap', { scrollWheelZoom:false }).setView([20, 0], 2);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 6 }).addTo(map);
+
+  // Data: [["City", count], ...]
+  const cityCounts = {{ city_counts | tojson }};
+  cityCounts.forEach(([city,count])=>{
+      fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(city)}`)
+        .then(r=>r.json()).then(res=>{
+            if(res[0]){
+              const { lat, lon } = res[0];
+              L.circleMarker([lat, lon], {
+                  radius: 8,
+                  fillColor: "#f00",
+                  color: "#f00",
+                  fillOpacity: 0.6
+              }).addTo(map)
+                .bindPopup(`${city}: ${count} job(s)`);
+            }
+        });
+  });
+</script>
+{% endblock %}

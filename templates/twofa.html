@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+
+{% block title %}Verify 2-FA Code{% endblock %}
+
+{% block content %}
+<h2 class="mb-3">Two-Factor Verification</h2>
+<p>Enter the 6-digit code from your authenticator app.</p>
+
+<form method="post" style="max-width:300px" class="mx-auto">
+  <input name="token"
+         class="form-control text-center mb-2"
+         placeholder="123 456"
+         maxlength="6"
+         autocomplete="one-time-code"
+         autofocus required>
+
+  <div class="form-check mb-3">
+    <input class="form-check-input" type="checkbox" name="remember" id="remember">
+    <label class="form-check-label" for="remember">
+      Remember this device for 30&nbsp;days
+    </label>
+  </div>
+
+  <button class="btn btn-primary w-100">Verify</button>
+</form>
+{% endblock %}

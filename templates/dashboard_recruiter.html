@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+{% block title %}Recruiter Dashboard{% endblock %}
+
+{% block content %}
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>Your Dashboard</h2>
+    <a href="{{ url_for('post_job') }}" class="btn btn-success">
+      <i class="bi bi-plus-circle"></i> Post a Job
+    </a>
+  </div>
+
+  {% if offers %}
+    {% for off in offers %}
+      <div class="card mb-3">
+        <div class="card-body">
+
+          <!-- Meta -->
+          <p class="text-muted small mb-1">
+            <strong>Job ID:</strong> {{ off.id }}
+          </p>
+
+          <!-- Core Info -->
+          <h5 class="card-title">{{ off.title }}</h5>
+          <p class="card-text">{{ off.description or '—' }}</p>
+
+          <!-- Structured Fields -->
+          <ul class="list-unstyled mb-3">
+            <li>
+              <strong>Required Skills:</strong>
+              {% for s in off.required_skills.split(',') if s.strip() %}
+                <span class="badge bg-secondary">{{ s.strip() }}</span>
+              {% endfor %}
+            </li>
+            <li>
+              <strong>Min Experience:</strong>
+              {{ off.min_experience }} year{% if off.min_experience != 1 %}s{% endif %}
+            </li>
+            <li><strong>Education Required:</strong> {{ off.education_required }}</li>
+            <li><strong>Location:</strong> {{ off.city }}, {{ off.country }}</li>
+            <li><strong>Category:</strong> {{ off.category }}</li>
+          </ul>
+
+          <!-- Actions -->
+          <a href="{{ url_for('edit_job', offer_id=off.id) }}"
+             class="btn btn-sm btn-primary me-2">Edit</a>
+
+          <form method="post"
+                action="{{ url_for('delete_job', offer_id=off.id) }}"
+                class="d-inline"
+                onsubmit="return confirm('Delete this job permanently?');">
+            <button class="btn btn-sm btn-outline-danger">Delete</button>
+          </form>
+
+        </div>
+      </div>
+    {% endfor %}
+  {% else %}
+    <div class="alert alert-info">
+      You haven’t posted any jobs yet.
+    </div>
+  {% endif %}
+{% endblock %}

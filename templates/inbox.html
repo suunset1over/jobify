@@ -1,0 +1,16 @@
+{% extends 'base.html' %}
+{% block title %}Inbox{% endblock %}
+{% block content %}
+<h2>Inbox</h2>
+<ul class="list-group">
+  {% for user in partners %}
+    <li class="list-group-item">
+      <a href="{{ url_for('chat', uid=user.id) }}">
+        {{ user.username }} ({{ user.role }})
+      </a>
+    </li>
+  {% else %}
+    <li class="list-group-item">No conversations yet.</li>
+  {% endfor %}
+</ul>
+{% endblock %}

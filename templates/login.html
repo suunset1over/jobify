@@ -1,0 +1,157 @@
+{% extends "base.html" %}
+{% block title %}Login – Jobify.ro{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+
+  <!-- 1. HERO -->
+  <div class="bg-primary text-white rounded-3 p-4 mb-5 text-center">
+    <h1 class="display-5 fw-bold">Jobify.ro</h1>
+    <p class="fs-4 mb-1">The #1 job-search site in Romania.</p>
+    <p class="fs-5">
+      We currently have <strong>{{ vacancies }}</strong> active vacancies.
+    </p>
+  </div>
+
+  <!-- 2. “How to Find a Job” card -->
+  <a href="{{ url_for('how_to_find_job') }}" class="text-decoration-none">
+    <div class="card shadow-sm flex-md-row align-items-center mb-4 p-3">
+      <div class="flex-grow-1">
+        <h4 class="fw-bold mb-1">How to Find a Job</h4>
+        <p class="mb-2 text-muted">A step-by-step guide from Jobify.ro.</p>
+        <span class="fw-semibold text-primary">Learn more →</span>
+      </div>
+      <img src="{{ url_for('static', filename='img/how_to_find_job.png') }}"
+           alt="How to find a job" class="d-none d-md-block"
+           style="max-height:120px; margin-left:1rem;">
+    </div>
+  </a>
+
+
+
+  <!-- 4. Create Resume banner -->
+  <div class="card shadow-sm mb-5 p-3">
+    <div class="row align-items-center">
+      <div class="col-auto">
+        <svg width="60" height="60" fill="none" stroke="#0d6efd" stroke-width="3"
+             stroke-linecap="round" stroke-linejoin="round">
+          <rect x="6" y="8" width="48" height="52" rx="4" ry="4"/>
+          <line x1="16" y1="30" x2="44" y2="30"/>
+          <line x1="16" y1="42" x2="44" y2="42"/>
+          <circle cx="30" cy="18" r="4"/>
+        </svg>
+      </div>
+      <div class="col">
+        <h4 class="fw-bold mb-1">Create a resume</h4>
+        <p class="mb-2 text-muted">Only 3–5 minutes and employers will be able to view it.</p>
+      </div>
+      <div class="col-auto">
+        <a href="{{ url_for('register') }}" class="btn btn-outline-success me-2">Create</a>
+        <a href="{{ url_for('register') }}#upload" class="btn btn-outline-primary">Upload file</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- 5. LOGIN FORM + MINI-MAP -->
+  <div class="row g-4 mb-5">
+    <div class="col-md-5">
+      <div class="card shadow-sm p-3">
+        <h3 class="mb-3">Login</h3>
+        <form method="post">
+          <div class="mb-2">
+            <label class="form-label">Username</label>
+            <input name="username" class="form-control" required>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Password</label>
+            <input name="password" type="password" class="form-control" required>
+          </div>
+          <button class="btn btn-primary w-100">Login</button>
+        </form>
+      </div>
+    </div>
+    <div class="col-md-7">
+      <div class="card shadow-sm p-3">
+        <h5 class="mb-3">Vacancies by City</h5>
+        <div id="publicMap" style="height:300px;"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 6. Latest News teaser -->
+<hr class="my-4">
+
+<h3 class="mb-3">Latest News</h3>
+<div class="row row-cols-1 row-cols-md-3 g-4 mb-5">
+  {% for n in latest_news %}
+    <div class="col">
+      <div class="card h-100 shadow-sm">
+        {% if n.image_url %}
+          <img src="{{ n.image_url }}" class="card-img-top"
+               style="height:140px;object-fit:cover">
+        {% endif %}
+        <div class="card-body">
+          <span class="badge bg-warning text-dark mb-2">News</span>
+          <h5 class="card-title">{{ n.title }}</h5>
+          <p class="card-text">{{ n.teaser }}</p>
+        </div>
+        <a href="{{ url_for('news_detail', nid=n.id) }}"
+           class="stretched-link"></a>
+      </div>
+    </div>
+  {% endfor %}
+</div>
+
+<div class="text-end mb-5">
+  <a href="{{ url_for('news_list') }}" class="text-decoration-none">All news →</a>
+</div>
+
+
+</div>
+<!-- 6. Latest Articles teaser -->
+<hr class="my-4">
+
+<h2>Latest Articles</h2>
+<div class="row">
+  {% for art in latest_articles %}
+    <div class="col-md-4 mb-3">
+      <div class="card h-100">
+        {% if art.image_url %}
+          <img src="{{ art.image_url }}" class="card-img-top" alt="{{ art.title }}">
+        {% endif %}
+        <div class="card-body">
+          <span class="badge bg-info mb-2">Article</span>
+          <h5 class="card-title">{{ art.title }}</h5>
+          <p class="card-text">{{ art.teaser }}</p>
+          <a href="{{ url_for('article_detail', aid=art.id) }}" class="stretched-link"></a>
+        </div>
+      </div>
+    </div>
+  {% endfor %}
+</div>
+
+<p class="text-end">
+  <a href="{{ url_for('article_list') }}">See all articles →</a>
+</p>
+
+<!-- Leaflet -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+  const map = L.map('publicMap', {scrollWheelZoom:false}).setView([46,25],5);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:6}).addTo(map);
+
+const cityCounts = {{ (markers or []) | tojson }};
+
+  cityCounts.forEach(([city,count])=>{
+    fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(city+', Romania')}`)
+      .then(res=>res.json()).then(js=>{
+        if(js[0]){
+          const {lat,lon}=js[0];
+          L.circleMarker([lat,lon],{radius:7,fillColor:"#f00",color:"#f00",fillOpacity:0.6})
+           .addTo(map).bindPopup(`${city}: ${count} job(s)`);
+        }
+      });
+  });
+</script>
+{% endblock %}

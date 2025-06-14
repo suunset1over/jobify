@@ -1,0 +1,33 @@
+{% extends 'base.html' %}
+{% block title %}My Applications{% endblock %}
+{% block content %}
+<h2>My Applications</h2>
+<table class="table table-bordered align-middle">
+  <thead class="table-light">
+    <tr>
+      <th>Job Title</th>
+      <th>Applied On</th>
+      <th>Status</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for a in applications %}
+      <tr>
+        <td>{{ a.job_offer.title }}</td>
+        <td>{{ a.applied_on.strftime('%Y-%m-%d %H:%M') }}</td>
+        <td>
+          {% if a.status == 'Pending' %}
+            <span class="badge bg-secondary">Pending</span>
+          {% elif a.status == 'Accepted' %}
+            <span class="badge bg-success">Accepted</span>
+          {% else %}
+            <span class="badge bg-danger">Rejected</span>
+          {% endif %}
+        </td>
+      </tr>
+    {% else %}
+      <tr><td colspan="3" class="text-center">No applications yet.</td></tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endblock %}

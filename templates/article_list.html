@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block title %}Articles{% endblock %}
+{% block content %}
+<h2 class="mb-4">Articles</h2>
+
+<div class="row row-cols-1 row-cols-md-3 g-4">
+  {% for art in pagination.items %}
+    <div class="col">
+      <div class="card h-100 shadow-sm">
+        {% if art.image_url %}
+          <img src="{{ art.image_url }}" class="card-img-top"
+               style="height:140px;object-fit:cover">
+        {% endif %}
+        <div class="card-body">
+          <span class="badge bg-info mb-2">Work Culture</span>
+          <h5 class="card-title">{{ art.title }}</h5>
+          <p class="card-text">{{ art.teaser }}</p>
+        </div>
+        <a href="{{ url_for('article_detail', aid=art.id) }}"
+           class="stretched-link"></a>
+      </div>
+    </div>
+  {% endfor %}
+</div>
+
+{% include 'pagination.html' with context %}
+{% endblock %}

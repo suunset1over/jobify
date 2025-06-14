@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% block title %}{{ article.title }}{% endblock %}
+{% block content %}
+<h1 class="mb-3">{{ article.title }}</h1>
+{% if article.image_url %}
+  <img src="{{ article.image_url }}" class="img-fluid mb-4">
+{% endif %}
+<p class="text-muted">Posted {{ article.created_at.strftime('%d %b %Y') }}</p>
+<div class="mb-5" style="white-space:pre-wrap;">{{ article.body }}</div>
+<a class="btn btn-outline-secondary" href="{{ url_for('article_list') }}">← All articles</a>
+{% endblock %}

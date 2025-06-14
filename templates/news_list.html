@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block title %}News{% endblock %}
+
+{% block content %}
+<h2 class="mb-4">News</h2>
+
+<div class="row row-cols-1 row-cols-md-3 g-4">
+  {% for n in pagination.items %}
+    <div class="col">
+      <div class="card h-100 shadow-sm">
+        {% if n.image_url %}
+          <img src="{{ n.image_url }}" class="card-img-top"
+               style="height:140px;object-fit:cover">
+        {% endif %}
+        <div class="card-body">
+          <span class="badge bg-warning text-dark mb-2">News</span>
+          <h5 class="card-title">{{ n.title }}</h5>
+          <p class="card-text">{{ n.teaser }}</p>
+        </div>
+        <a href="{{ url_for('news_detail', nid=n.id) }}" class="stretched-link"></a>
+      </div>
+    </div>
+  {% endfor %}
+</div>
+
+{% include 'pagination.html' with context %}
+{% endblock %}

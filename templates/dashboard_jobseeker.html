@@ -1,0 +1,114 @@
+{% extends "base.html" %}
+{% block title %}My Profile{% endblock %}
+
+{% block content %}
+<div class="position-relative mb-4">
+  <h2 class="mb-3">Your Profile</h2>
+
+  <!-- three-dots settings menu -->
+  <div class="dropdown position-absolute top-0 end-0 mt-2">
+    <button class="btn btn-sm btn-outline-secondary" 
+            id="jobseekerSettingsDropdown" 
+            data-bs-toggle="dropdown" 
+            aria-expanded="false">
+      ⋮
+    </button>
+    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="jobseekerSettingsDropdown">
+      <li>
+        <a class="dropdown-item" href="{{ url_for('account_settings') }}">
+          Account Settings
+        </a>
+      </li>
+      <li>
+        <a class="dropdown-item" href="{{ url_for('category_settings') }}">
+          Category Settings
+        </a>
+      </li>
+      <li>
+        <a class="dropdown-item" href="{{ url_for('enable_2fa') }}">
+          {% if current_user.twofa_secret %}
+            Disable 2-FA
+          {% else %}
+            Enable 2-FA
+          {% endif %}
+        </a>
+      </li>
+    </ul>
+  </div>
+</div>
+
+<!-- CV controls -->
+{% if profile and profile.cv_path %}
+  <p><strong>Skills:</strong> {{ profile.skills }}</p>
+  <p><strong>CV:</strong>
+    <a href="/static/uploads/{{ profile.cv_path.split('/')[-1] }}" target="_blank">
+      Download
+    </a>
+  </p>
+  <form class="d-inline" method="post" action="{{ url_for('replace_cv') }}" enctype="multipart/form-data">
+    <input type="file" name="cv_file" class="form-control form-control-sm d-inline" style="width:200px">
+    <button class="btn btn-sm btn-outline-primary">Replace CV</button>
+  </form>
+  <form class="d-inline" method="post" action="{{ url_for('delete_cv') }}">
+    <button onclick="return confirm('Delete CV?');" class="btn btn-sm btn-outline-danger">
+      Delete CV
+    </button>
+  </form>
+{% else %}
+  <form method="post" action="{{ url_for('upload_cv') }}" enctype="multipart/form-data" class="mb-4">
+    <input type="file" name="cv_file" required class="form-control mb-2">
+    <button class="btn btn-success">Upload CV</button>
+  </form>
+{% endif %}
+
+<hr>
+
+<h3>Recent Decisions</h3>
+{% if decisions %}
+  <ul>
+    {% for d in decisions %}
+      <li>Your application for <strong>{{ d.job_offer.title }}</strong> was {{ d.status }}</li>
+    {% endfor %}
+  </ul>
+{% else %}
+  <p class="text-muted">No new decisions.</p>
+{% endif %}
+
+<hr>
+
+<h3>Top Job Matches</h3>
+{% for off, score, missing in recommendations %}
+  <div class="card mb-3">
+    <div class="card-body">
+      <h5 class="card-title">{{ off.title }}</h5>
+      <p class="card-text">{{ off.description or '-' }}</p>
+
+      <p><strong>Required Skills:</strong>
+        {% for s in off.required_skills.split(',') if s.strip() %}
+          <span class="badge bg-secondary">{{ s.strip() }}</span>
+        {% endfor %}
+      </p>
+
+      <p class="mb-1"><strong>Min Experience:</strong> {{ off.min_experience }} year</p>
+      <p class="mb-1"><strong>Education Required:</strong> {{ off.education_required }}</p>
+
+      <p class="mb-1"><strong>Fit:</strong> {{ score }}%</p>
+
+      {% if missing %}
+        <p class="mb-2"><strong>Missing Skills:</strong>
+          {% for m in missing %}
+            <span class="badge bg-warning text-dark">{{ m }}</span>
+          {% endfor %}
+        </p>
+      {% endif %}
+
+      <a href="{{ url_for('apply_job', job_id=off.id) }}" class="btn btn-primary">Apply</a>
+      <a href="{{ url_for('chat', uid=off.recruiter_id) }}" class="btn btn-outline-primary">
+        Message&nbsp;Recruiter
+      </a>
+    </div>
+  </div>
+{% else %}
+  <p>No recommendations yet—upload or build a CV.</p>
+{% endfor %}
+{% endblock %}

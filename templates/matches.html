@@ -1,0 +1,16 @@
+{% extends 'base.html' %}
+{% block title %}Candidate Matches{% endblock %}
+{% block content %}
+<h2>Top Matches</h2>
+<ul class="list-group">
+  {% for prof, off, score in matches %}
+    <li class="list-group-item">
+      <strong>Candidate ID:</strong> {{ prof.user_id }}<br>
+      <strong>Job:</strong> {{ off.title }}<br>
+      <strong>Score:</strong> {{ '%.2f'|format(score) }}
+    </li>
+  {% else %}
+    <li class="list-group-item">No matches to display.</li>
+  {% endfor %}
+</ul>
+{% endblock %}

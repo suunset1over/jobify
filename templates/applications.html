@@ -1,0 +1,49 @@
+{% extends 'base.html' %}
+{% block title %}Applications{% endblock %}
+
+{% block content %}
+<h2>Applications Received</h2>
+
+<ul class="list-group">
+  {% for app in applications %}
+    <li class="list-group-item">
+      <h5>{{ app.job_offer.title }}</h5>
+      <p><strong>Applied:</strong> {{ app.applied_on.strftime('%Y-%m-%d %H:%M') }}</p>
+      <p><strong>Cover Letter:</strong><br>{{ app.cover_letter }}</p>
+
+      <p><strong>CV:</strong>
+        {% if app.job_seeker_profile and app.job_seeker_profile.cv_path %}
+          <a href="/static/uploads/{{ app.job_seeker_profile.cv_path.split('/')[-1] }}" target="_blank">Download</a>
+        {% else %}
+          N/A
+        {% endif %}
+      </p>
+
+      <p><strong>Status:</strong>
+        {% if app.status == 'Pending' %}
+          <span class="badge bg-secondary">Pending</span>
+        {% elif app.status == 'Accepted' %}
+          <span class="badge bg-success">Accepted</span>
+        {% else %}
+          <span class="badge bg-danger">Rejected</span>
+        {% endif %}
+      </p>
+
+      {% if app.status == 'Pending' %}
+        <form method="post" action="{{ url_for('accept_application', app_id=app.id) }}" class="d-inline">
+          <button class="btn btn-sm btn-outline-success">Accept</button>
+        </form>
+        <form method="post" action="{{ url_for('reject_application', app_id=app.id) }}" class="d-inline">
+          <button class="btn btn-sm btn-outline-danger">Reject</button>
+        </form>
+      {% endif %}
+
+      <a href="{{ url_for('message_candidate', app_id=app.id) }}" class="btn btn-sm btn-outline-primary ms-2">
+        Message
+      </a>
+    </li>
+  {% else %}
+    <li class="list-group-item">No applications yet.</li>
+  {% endfor %}
+</ul>
+{% endblock %}

@@ -1,0 +1,12 @@
+{% extends 'base.html' %}
+{% block title %}Apply to {{ offer.title }}{% endblock %}
+{% block content %}
+<h2>Apply for {{ offer.title }}</h2>
+<form method="post" class="mx-auto" style="max-width:600px;">
+  <div class="mb-3">
+    <label class="form-label">Cover Letter</label>
+    <textarea name="cover_letter" class="form-control" rows="6" required></textarea>
+  </div>
+  <button type="submit" class="btn btn-primary w-100">Submit Application</button>
+</form>
+{% endblock %}
