@@ -8,3 +8,5 @@ venv/
 build/
 dist/
 *.egg-info/
+venv/
+__pycache__/
