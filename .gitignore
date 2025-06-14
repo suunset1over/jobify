@@ -1,5 +1,7 @@
+# Python venv
 venv/
-**/__pycache__/
+# Byte-compiled / optimized / DLL files
+__pycache__/
 *.py[cod]
 *$py.class
 # Jupyter Notebook checkpoints
@@ -8,9 +10,3 @@ venv/
 build/
 dist/
 *.egg-info/
-venv/
-__pycache__/
-venv/
-__pycache__/
-venv/
-__pycache__/
