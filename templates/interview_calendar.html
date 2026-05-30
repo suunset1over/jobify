@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+{% block title %}Interview Calendar{% endblock %}
+{% block content %}
+<style>
+  .calendar-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+  .interview-card{border-left:5px solid var(--brand)}
+  @media(max-width:992px){.calendar-grid{grid-template-columns:1fr}}
+</style>
+<div class="d-flex flex-wrap justify-content-between align-items-end gap-2 mb-3 fade-up">
+  <div>
+    <h2 class="mb-1">Interview Calendar</h2>
+    <p class="text-muted mb-0">Confirmed interviews and pending time proposals in one place.</p>
+  </div>
+</div>
+<div class="calendar-grid">
+  {% for item in interviews %}
+    <div class="card interview-card fade-up">
+      <div class="card-body">
+        <div class="d-flex justify-content-between align-items-start gap-2">
+          <h5 class="mb-1">{{ item.application.job_offer.title }}</h5>
+          <span class="badge {% if item.status == 'Accepted' %}bg-success{% elif item.status == 'Declined' %}bg-danger{% elif item.status == 'Counter Proposed' %}bg-info text-dark{% else %}bg-warning text-dark{% endif %}">
+            {{ item.status }}
+          </span>
+        </div>
+        <div class="fs-5 fw-bold mt-2">{{ item.scheduled_at.strftime('%d %b %Y, %H:%M') }}</div>
+        {% if item.location %}<div class="text-muted mt-1">{{ item.location }}</div>{% endif %}
+        {% if item.note %}<p class="small mt-2 mb-2">{{ item.note }}</p>{% endif %}
+        <div class="small text-muted">
+          Candidate #{{ item.jobseeker_id }} · Recruiter #{{ item.recruiter_id }}
+        </div>
+        {% if current_user.role == 'recruiter' and item.status == 'Counter Proposed' %}
+          <div class="d-flex gap-2 mt-3">
+            <form method="post" action="{{ url_for('recruiter_respond_interview', schedule_id=item.id) }}">
+              <input type="hidden" name="decision" value="Accepted">
+              <button class="btn btn-sm btn-success">Accept time</button>
+            </form>
+            <form method="post" action="{{ url_for('recruiter_respond_interview', schedule_id=item.id) }}">
+              <input type="hidden" name="decision" value="Declined">
+              <button class="btn btn-sm btn-outline-danger">Decline</button>
+            </form>
+          </div>
+        {% elif current_user.role == 'jobseeker' and item.status == 'Proposed' %}
+          <div class="d-flex flex-wrap gap-2 mt-3">
+            <form method="post" action="{{ url_for('respond_interview', schedule_id=item.id) }}">
+              <input type="hidden" name="decision" value="Accepted">
+              <button class="btn btn-sm btn-success">Accept</button>
+            </form>
+            <form method="post" action="{{ url_for('respond_interview', schedule_id=item.id) }}">
+              <input type="hidden" name="decision" value="Declined">
+              <button class="btn btn-sm btn-outline-danger">Decline</button>
+            </form>
+          </div>
+          <details class="mt-3">
+            <summary class="fw-semibold">Propose another time</summary>
+            <form method="post" action="{{ url_for('respond_interview', schedule_id=item.id) }}" class="row g-2 mt-2">
+              <input type="hidden" name="decision" value="Counter Proposed">
+              <div class="col-md-4">
+                <input type="datetime-local" name="scheduled_at" class="form-control form-control-sm" required>
+              </div>
+              <div class="col-md-4">
+                <input type="text" name="location" class="form-control form-control-sm" placeholder="Location/link">
+              </div>
+              <div class="col-md-3">
+                <input type="text" name="note" class="form-control form-control-sm" placeholder="Note">
+              </div>
+              <div class="col-md-1">
+                <button class="btn btn-sm btn-primary w-100">Send</button>
+              </div>
+            </form>
+          </details>
+        {% endif %}
+      </div>
+    </div>
+  {% else %}
+    <div class="card fade-up">
+      <div class="card-body text-muted">No interviews scheduled yet.</div>
+    </div>
+  {% endfor %}
+</div>
+{% endblock %}

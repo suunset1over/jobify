@@ -1,0 +1,506 @@
+{% extends 'base.html' %}
+{% block title %}Build CV{% endblock %}
+{% block content %}
+<style>
+  .cv-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1.2fr) minmax(280px, .8fr);
+    gap: 24px;
+    align-items: start;
+  }
+  .template-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 10px;
+  }
+  .template-option input { display: none; }
+  .template-option span {
+    display: block;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px;
+    cursor: pointer;
+    background: var(--surface);
+    transition: border-color .18s ease, transform .18s ease, background-color .18s ease;
+  }
+  .template-option input:checked + span {
+    border-color: #0d6efd;
+    background: color-mix(in srgb, #0d6efd 10%, var(--surface));
+    transform: translateY(-1px);
+  }
+  .cv-preview {
+    --cv-accent: #0d6efd;
+    min-height: 520px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--surface);
+    overflow: hidden;
+    position: sticky;
+    top: 96px;
+  }
+  .cv-preview.modern-preview {
+    display: grid;
+    grid-template-columns: 34% 1fr;
+  }
+  .cv-preview.classic-preview {
+    display: block;
+    text-align: center;
+  }
+  .cv-preview.classic-preview .preview-sidebar {
+    background: transparent;
+    color: var(--fg);
+    padding-bottom: 8px;
+  }
+  .cv-preview.classic-preview .preview-main {
+    text-align: left;
+    border-top: 2px solid var(--cv-accent);
+    margin: 0 24px;
+    padding-left: 0;
+    padding-right: 0;
+  }
+  .cv-preview.compact-preview {
+    display: block;
+  }
+  .cv-preview.compact-preview .preview-sidebar {
+    background: var(--cv-accent);
+    color: #fff;
+    padding: 18px 24px;
+  }
+  .preview-sidebar {
+    background: var(--cv-accent);
+    color: #fff;
+    padding: 24px 18px;
+  }
+  .preview-contact {
+    overflow-wrap: anywhere;
+    line-height: 1.25;
+  }
+  .preview-photo {
+    width: 74px;
+    height: 74px;
+    border-radius: 999px;
+    object-fit: cover;
+    border: 3px solid rgba(255, 255, 255, .75);
+    margin-top: 18px;
+    display: none;
+  }
+  .classic-preview .preview-photo,
+  .compact-preview .preview-photo {
+    margin-left: auto;
+    margin-right: auto;
+  }
+  .preview-main { padding: 24px; }
+  .preview-name { font-size: 24px; font-weight: 800; line-height: 1.1; }
+  .preview-title {
+    font-size: 12px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: .08em;
+    margin: 18px 0 8px;
+  }
+  .preview-line {
+    height: 8px;
+    background: var(--surface-soft);
+    border-radius: 999px;
+    margin-bottom: 8px;
+  }
+  .preview-pill {
+    display: inline-block;
+    background: color-mix(in srgb, var(--cv-accent) 12%, var(--surface));
+    border: 1px solid color-mix(in srgb, var(--cv-accent) 34%, var(--border));
+    border-radius: 999px;
+    padding: 4px 8px;
+    margin: 0 4px 6px 0;
+    font-size: 12px;
+  }
+  .quality-panel {
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--surface-soft);
+    padding: 16px;
+  }
+  .quality-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 14px;
+  }
+  .quality-score {
+    min-width: 72px;
+    text-align: center;
+  }
+  .quality-score strong {
+    display: block;
+    font-size: 28px;
+    line-height: 1;
+  }
+  .quality-meter {
+    height: 8px;
+    width: 100%;
+    overflow: hidden;
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--muted) 14%, transparent);
+  }
+  .quality-meter span {
+    display: block;
+    width: 0%;
+    height: 100%;
+    border-radius: inherit;
+    background: linear-gradient(90deg, #dc3545, #ffc107 48%, #198754);
+    transition: width .25s ease;
+  }
+  .quality-row {
+    display: grid;
+    grid-template-columns: minmax(110px, .8fr) minmax(0, 1.6fr) auto;
+    gap: 12px;
+    align-items: center;
+    padding: 10px 0;
+    border-top: 1px solid var(--border);
+  }
+  .quality-row:first-of-type {
+    border-top: 0;
+  }
+  .quality-detail {
+    color: var(--muted);
+    font-size: 14px;
+    overflow-wrap: anywhere;
+  }
+  .quality-badge {
+    border-radius: 999px;
+    padding: 5px 10px;
+    font-weight: 700;
+    font-size: 12px;
+    white-space: nowrap;
+  }
+  .quality-badge.weak { background: #f8d7da; color: #842029; }
+  .quality-badge.medium { background: #fff3cd; color: #664d03; }
+  .quality-badge.strong { background: #d1e7dd; color: #0f5132; }
+  @media (max-width: 992px) {
+    .cv-layout { grid-template-columns: 1fr; }
+    .cv-preview { position: static; }
+  }
+  @media (max-width: 576px) {
+    .template-grid { grid-template-columns: 1fr; }
+    .quality-row { grid-template-columns: 1fr; }
+    .quality-badge { width: fit-content; }
+  }
+</style>
+
+<div class="d-flex flex-wrap justify-content-between align-items-end gap-2 mb-3 fade-up">
+  <div>
+    <h2 class="mb-1">Create a Custom-Styled CV</h2>
+    <p class="text-muted mb-0">Choose a template, improve the content with AI, then export a polished PDF.</p>
+  </div>
+</div>
+
+<div class="cv-layout">
+  <form method="post" enctype="multipart/form-data" class="card fade-up">
+    <div class="card-body">
+      <h5 class="mb-3">Template</h5>
+      <div class="template-grid mb-4">
+        <label class="template-option">
+          <input type="radio" name="template" value="modern" checked>
+          <span><strong>Modern</strong><br><small class="text-muted">Sidebar, bold accent</small></span>
+        </label>
+        <label class="template-option">
+          <input type="radio" name="template" value="classic">
+          <span><strong>Classic</strong><br><small class="text-muted">Centered, formal</small></span>
+        </label>
+        <label class="template-option">
+          <input type="radio" name="template" value="compact">
+          <span><strong>Compact</strong><br><small class="text-muted">Dense, recruiter-friendly</small></span>
+        </label>
+      </div>
+
+      <div class="row g-3">
+        <div class="col-md-6">
+          <input class="form-control" name="name" placeholder="Full Name" required>
+        </div>
+        <div class="col-md-6">
+          <input class="form-control" name="email" placeholder="Email" required>
+        </div>
+        <div class="col-md-6">
+          <input class="form-control" name="phone" placeholder="Phone" required>
+        </div>
+        <div class="col-md-2">
+          <label class="form-label">Accent</label>
+          <input type="color" name="accent_color" value="#0d6efd" class="form-control form-control-color">
+        </div>
+        <div class="col-md-2">
+          <label class="form-label">Text</label>
+          <input type="color" name="text_color" value="#111827" class="form-control form-control-color">
+        </div>
+        <div class="col-md-2">
+          <label class="form-label">Paper</label>
+          <input type="color" name="bg_color" value="#ffffff" class="form-control form-control-color">
+        </div>
+      </div>
+
+      <div class="mb-3 mt-3">
+        <textarea class="form-control" name="summary" rows="3" placeholder="Professional summary" required></textarea>
+      </div>
+      <div class="mb-3">
+        <input class="form-control" name="skills" placeholder="Skills (comma-separated)" required>
+      </div>
+      <div class="mb-3">
+        <textarea class="form-control" name="experience" rows="5" placeholder="Experience details" required></textarea>
+      </div>
+      <div class="mb-3">
+        <textarea class="form-control" name="education" rows="3" placeholder="Education details" required></textarea>
+      </div>
+
+      <section class="quality-panel mb-3" aria-live="polite">
+        <div class="quality-head">
+          <div>
+            <h5 class="mb-1">CV Quality Checker</h5>
+            <p class="text-muted mb-0 small">Local review before PDF export. It works even when Gemini quota is unavailable.</p>
+          </div>
+          <div class="quality-score">
+            <strong id="qualityScore">0%</strong>
+            <small class="text-muted">ready</small>
+          </div>
+        </div>
+        <div class="quality-meter mb-2" aria-hidden="true"><span id="qualityMeter"></span></div>
+        <div class="quality-row" data-quality-row="summary">
+          <strong>Summary</strong>
+          <span class="quality-detail">Add a role, strongest skills, and target position.</span>
+          <span class="quality-badge weak">Weak</span>
+        </div>
+        <div class="quality-row" data-quality-row="skills">
+          <strong>Skills</strong>
+          <span class="quality-detail">List tools, languages, frameworks, and soft skills.</span>
+          <span class="quality-badge weak">Too few</span>
+        </div>
+        <div class="quality-row" data-quality-row="experience">
+          <strong>Experience</strong>
+          <span class="quality-detail">Add results, tools, and measurable impact.</span>
+          <span class="quality-badge weak">Missing metrics</span>
+        </div>
+        <div class="quality-row" data-quality-row="education">
+          <strong>Education</strong>
+          <span class="quality-detail">Include degree, institution, field, and years.</span>
+          <span class="quality-badge weak">Incomplete</span>
+        </div>
+      </section>
+
+      <div class="mb-3">
+        <label class="form-label">Profile photo (optional)</label>
+        <input type="file" name="photo" accept="image/*" class="form-control">
+      </div>
+
+      <div class="d-flex flex-wrap gap-2 mb-3">
+        <button type="button" id="aiImproveBtn" class="btn btn-outline-dark flex-fill">
+          Improve with AI
+        </button>
+        <button class="btn btn-success flex-fill">Generate PDF CV</button>
+      </div>
+
+      <div id="aiSuggestions" class="alert alert-info d-none"></div>
+    </div>
+  </form>
+
+  <aside class="cv-preview modern-preview fade-up" id="cvPreview">
+    <div class="preview-sidebar">
+      <div class="preview-name" data-preview="name">Your Name</div>
+      <div class="mt-3 small preview-contact" data-preview="email">email@example.com</div>
+      <div class="small preview-contact" data-preview="phone">+40 700 000 000</div>
+      <img class="preview-photo" alt="" data-preview="photo">
+    </div>
+    <div class="preview-main">
+      <div class="preview-title">Profile</div>
+      <p data-preview="summary">A concise professional summary will appear here.</p>
+      <div class="preview-title">Skills</div>
+      <div data-preview="skills">
+        <span class="preview-pill">Python</span>
+        <span class="preview-pill">SQL</span>
+      </div>
+      <div class="preview-title">Experience</div>
+      <div class="preview-line"></div>
+      <div class="preview-line" style="width: 85%;"></div>
+      <div class="preview-title">Education</div>
+      <div class="preview-line" style="width: 70%;"></div>
+    </div>
+  </aside>
+</div>
+
+<script>
+  const form = document.querySelector("form");
+  const aiButton = document.getElementById("aiImproveBtn");
+  const suggestionsBox = document.getElementById("aiSuggestions");
+  const preview = document.getElementById("cvPreview");
+  const qualityScore = document.getElementById("qualityScore");
+  const qualityMeter = document.getElementById("qualityMeter");
+  let photoUrl = "";
+
+  function words(text) {
+    return (text || "").trim().split(/\s+/).filter(Boolean);
+  }
+
+  function skillsList() {
+    return (form.elements.skills?.value || "")
+      .split(/[,;\n]/)
+      .map((item) => item.trim())
+      .filter(Boolean);
+  }
+
+  function setQualityRow(key, label, detail, level) {
+    const row = document.querySelector(`[data-quality-row="${key}"]`);
+    const detailNode = row.querySelector(".quality-detail");
+    const badge = row.querySelector(".quality-badge");
+    detailNode.textContent = detail;
+    badge.textContent = label;
+    badge.className = `quality-badge ${level}`;
+  }
+
+  function updateQualityChecker() {
+    const summary = form.elements.summary.value.trim();
+    const experience = form.elements.experience.value.trim();
+    const education = form.elements.education.value.trim();
+    const skillCount = skillsList().length;
+    const summaryWords = words(summary).length;
+    const experienceWords = words(experience).length;
+    const hasMetric = /\b(\d+|percent|%|users?|clients?|projects?|years?|months?|revenue|cost|team|sales|growth|reduced|increased|improved)\b/i.test(experience);
+    const hasAction = /\b(built|created|developed|managed|led|implemented|designed|optimized|automated|analyzed|improved|coordinated|supported)\b/i.test(experience);
+    const educationComplete = /\b(bachelor|master|degree|university|college|academy|faculty|school|licen|licenta|ase|bsc|msc|ba|ma)\b/i.test(education) && /\b(19|20)\d{2}\b/.test(education);
+
+    let score = 0;
+
+    if (summaryWords >= 35) {
+      score += 25;
+      setQualityRow("summary", "Strong", "Clear 2-3 sentence profile with enough detail.", "strong");
+    } else if (summaryWords >= 18) {
+      score += 18;
+      setQualityRow("summary", "Good", "Good start. Add target role or one stronger result.", "medium");
+    } else {
+      score += summaryWords ? 8 : 0;
+      setQualityRow("summary", "Weak", "Expand to 2-3 sentences with role, skills, and target position.", "weak");
+    }
+
+    if (skillCount >= 8) {
+      score += 25;
+      setQualityRow("skills", "Strong", `${skillCount} skills listed with enough breadth for matching.`, "strong");
+    } else if (skillCount >= 4) {
+      score += 18;
+      setQualityRow("skills", "Good", `${skillCount} skills listed. Add tools, frameworks, or soft skills.`, "medium");
+    } else {
+      score += skillCount ? 8 : 0;
+      setQualityRow("skills", "Too few", "Add at least 4-8 relevant skills separated by commas.", "weak");
+    }
+
+    if (experienceWords >= 25 && hasMetric && hasAction) {
+      score += 25;
+      setQualityRow("experience", "Strong", "Experience has actions, detail, and measurable impact.", "strong");
+    } else if (experienceWords >= 15 && hasAction) {
+      score += 17;
+      setQualityRow("experience", "Good", "Good description. Add numbers, scope, or business results.", "medium");
+    } else if (experienceWords > 0) {
+      score += 8;
+      setQualityRow("experience", "Missing metrics", "Mention what you did, tools used, and measurable results.", "weak");
+    } else {
+      setQualityRow("experience", "Missing", "Add internships, projects, volunteering, or coursework.", "weak");
+    }
+
+    if (educationComplete) {
+      score += 25;
+      setQualityRow("education", "Complete", "Education includes degree or institution plus years.", "strong");
+    } else if (words(education).length >= 5) {
+      score += 14;
+      setQualityRow("education", "Almost", "Add institution, degree, field, and graduation years.", "medium");
+    } else {
+      score += education ? 7 : 0;
+      setQualityRow("education", "Incomplete", "Include degree, university, specialization, and years.", "weak");
+    }
+
+    qualityScore.textContent = `${Math.min(score, 100)}%`;
+    qualityMeter.style.width = `${Math.min(score, 100)}%`;
+  }
+
+  function updatePreview() {
+    const value = (name, fallback) => form.elements[name]?.value.trim() || fallback;
+    preview.querySelector('[data-preview="name"]').textContent = value("name", "Your Name");
+    preview.querySelector('[data-preview="email"]').textContent = value("email", "email@example.com");
+    preview.querySelector('[data-preview="phone"]').textContent = value("phone", "+40 700 000 000");
+    preview.querySelector('[data-preview="summary"]').textContent = value("summary", "A concise professional summary will appear here.");
+    const skillBox = preview.querySelector('[data-preview="skills"]');
+    skillBox.replaceChildren();
+    value("skills", "Python, SQL").split(",").map((item) => item.trim()).filter(Boolean).slice(0, 8).forEach((skill) => {
+      const pill = document.createElement("span");
+      pill.className = "preview-pill";
+      pill.textContent = skill;
+      skillBox.appendChild(pill);
+    });
+    const accent = form.elements.accent_color.value;
+    preview.style.setProperty("--cv-accent", accent);
+    const template = form.elements.template.value;
+    preview.className = `cv-preview fade-up ${template}-preview`;
+    updateQualityChecker();
+  }
+
+  form.addEventListener("input", updatePreview);
+  form.addEventListener("change", updatePreview);
+  form.elements.photo.addEventListener("change", () => {
+    const photo = preview.querySelector('[data-preview="photo"]');
+    if (photoUrl) URL.revokeObjectURL(photoUrl);
+    const file = form.elements.photo.files[0];
+    if (!file) {
+      photo.style.display = "none";
+      photo.removeAttribute("src");
+      return;
+    }
+    photoUrl = URL.createObjectURL(file);
+    photo.src = photoUrl;
+    photo.style.display = "block";
+  });
+  updatePreview();
+
+  aiButton.addEventListener("click", async () => {
+    aiButton.disabled = true;
+    aiButton.textContent = "Improving...";
+    suggestionsBox.classList.add("d-none");
+
+    const fields = ["name", "email", "phone", "summary", "skills", "experience", "education"];
+    const payload = {};
+    fields.forEach((name) => {
+      payload[name] = form.elements[name]?.value || "";
+    });
+
+    try {
+      const response = await fetch("{{ url_for('improve_cv') }}", {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify(payload)
+      });
+      const data = await response.json();
+      ["summary", "skills", "experience", "education"].forEach((name) => {
+        if (data[name]) form.elements[name].value = data[name];
+      });
+      updatePreview();
+
+      const suggestions = data.suggestions || [];
+      suggestionsBox.replaceChildren();
+      if (suggestions.length) {
+        const strong = document.createElement("strong");
+        strong.textContent = data.ai_used ? "AI suggestions:" : "AI status:";
+        const list = document.createElement("ul");
+        list.className = "mb-0";
+        suggestions.forEach((item) => {
+          const li = document.createElement("li");
+          li.textContent = item;
+          list.appendChild(li);
+        });
+        suggestionsBox.append(strong, list);
+      } else {
+        suggestionsBox.textContent = "AI improved the CV text.";
+      }
+      suggestionsBox.classList.remove("d-none");
+    } catch (error) {
+      suggestionsBox.textContent = "AI improvement is unavailable right now.";
+      suggestionsBox.classList.remove("d-none");
+    } finally {
+      aiButton.disabled = false;
+      aiButton.textContent = "Improve with AI";
+    }
+  });
+</script>
+{% endblock %}

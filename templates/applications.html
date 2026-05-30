@@ -1,0 +1,192 @@
+{% extends 'base.html' %}
+{% block title %}Applications{% endblock %}
+
+{% block content %}
+<style>
+  .shortlist-meter {
+    height: 10px;
+    background: var(--surface-soft);
+    border-radius: 999px;
+    overflow: hidden;
+  }
+  .shortlist-meter span {
+    display: block;
+    height: 100%;
+    width: var(--score);
+    background: linear-gradient(90deg, #ef4444, #f59e0b, #22c55e);
+    border-radius: inherit;
+  }
+  .shortlist-grid {
+    display: grid;
+    grid-template-columns: minmax(180px, .34fr) minmax(0, .66fr);
+    gap: 18px;
+  }
+  @media (max-width: 992px) {
+    .shortlist-grid { grid-template-columns: 1fr; }
+  }
+</style>
+
+<div class="d-flex flex-wrap justify-content-between align-items-end gap-2 mb-3 fade-up">
+  <div>
+    <h2 class="mb-1">Recruiter AI Shortlist</h2>
+    <p class="text-muted mb-0">Candidates are ranked by fit score, with reasoning and interview prompts.</p>
+  </div>
+  <a href="{{ url_for('ai_status') }}" class="btn btn-outline-dark btn-sm">AI Status</a>
+</div>
+
+{% for app in applications %}
+  {% set report = shortlist.get(app.id) %}
+  <div class="card mb-3 fade-up">
+    <div class="card-body">
+      <div class="d-flex flex-wrap justify-content-between align-items-start gap-2 mb-3">
+        <div>
+          <h5 class="mb-1">#{{ loop.index }} · {{ app.job_offer.title }}</h5>
+          <div class="text-muted small">
+            Candidate #{{ app.jobseeker_id }} · Applied {{ app.applied_on.strftime('%Y-%m-%d %H:%M') }}
+          </div>
+        </div>
+        <div class="d-flex flex-wrap gap-2 align-items-center">
+          {% if app.status == 'Pending' %}
+            <span class="badge bg-secondary">Pending</span>
+          {% elif app.status == 'Accepted' %}
+            <span class="badge bg-success">Accepted</span>
+          {% else %}
+            <span class="badge bg-danger">Rejected</span>
+          {% endif %}
+          {% if report %}
+            <span class="badge
+              {% if report.priority == 'low' %}bg-success
+              {% elif report.priority == 'medium' %}bg-warning text-dark
+              {% else %}bg-danger
+              {% endif %}
+            ">
+              {{ report.priority_label }}
+            </span>
+          {% endif %}
+        </div>
+      </div>
+
+      {% if report %}
+        <div class="shortlist-grid">
+          <aside>
+            <div class="display-5 fw-bold">{{ report.score }}%</div>
+            <div class="text-muted mb-2">Fit score</div>
+            <div class="shortlist-meter mb-3" style="--score: {{ report.score }}%;">
+              <span></span>
+            </div>
+
+            <div class="mb-2"><strong>Strengths</strong></div>
+            {% if report.strengths %}
+              {% for skill in report.strengths %}
+                <span class="badge bg-success me-1 mb-1">{{ skill }}</span>
+              {% endfor %}
+            {% else %}
+              <p class="text-muted small">No direct skill overlap detected.</p>
+            {% endif %}
+
+            <div class="mt-3 mb-2"><strong>Gaps</strong></div>
+            {% if report.gaps %}
+              {% for skill in report.gaps %}
+                <span class="badge bg-warning text-dark me-1 mb-1">{{ skill }}</span>
+              {% endfor %}
+            {% else %}
+              <p class="text-muted small">No major required gaps.</p>
+            {% endif %}
+          </aside>
+
+          <section>
+            <h6>AI Summary</h6>
+            <p>{{ report.summary }}</p>
+
+            <h6>Why this candidate</h6>
+            <ul>
+              {% for reason in report.why %}
+                <li>{{ reason }}</li>
+              {% endfor %}
+            </ul>
+
+            <h6>Suggested interview questions</h6>
+            <ol class="mb-3">
+              {% for question in report.questions %}
+                <li>{{ question }}</li>
+              {% endfor %}
+            </ol>
+          </section>
+        </div>
+      {% else %}
+        <div class="alert alert-warning">This application has no candidate profile yet.</div>
+      {% endif %}
+
+      <details class="mt-3">
+        <summary class="fw-semibold">Cover letter</summary>
+        <p class="mt-2 mb-0">{{ app.cover_letter }}</p>
+      </details>
+
+      <div class="d-flex flex-wrap gap-2 mt-3">
+        {% if app.job_seeker_profile and app.job_seeker_profile.cv_path %}
+          <a href="{{ url_for('serve_upload', filename=app.job_seeker_profile.cv_path) }}"
+             class="btn btn-sm btn-outline-secondary"
+             target="_blank">
+            Download CV
+          </a>
+        {% endif %}
+
+        {% if app.status == 'Pending' %}
+          <form method="post" action="{{ url_for('accept_application', app_id=app.id) }}">
+            <button class="btn btn-sm btn-outline-success">Accept</button>
+          </form>
+          <form method="post" action="{{ url_for('reject_application', app_id=app.id) }}">
+            <button class="btn btn-sm btn-outline-danger">Reject</button>
+          </form>
+        {% endif %}
+
+        <a href="{{ url_for('message_candidate', app_id=app.id) }}"
+           class="btn btn-sm btn-outline-primary">
+          Message
+        </a>
+      </div>
+
+      <div class="mt-3 border rounded p-3">
+        <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-2">
+          <h6 class="mb-0">Interview Scheduler</h6>
+          {% if app.interview_schedules %}
+            {% set latest = app.interview_schedules[-1] %}
+            <span class="badge {% if latest.status == 'Accepted' %}bg-success{% elif latest.status == 'Declined' %}bg-danger{% else %}bg-warning text-dark{% endif %}">
+              Latest: {{ latest.status }}
+            </span>
+          {% endif %}
+        </div>
+        {% if app.interview_schedules %}
+          <div class="small text-muted mb-2">
+            {% for item in app.interview_schedules[-2:] %}
+              <div>
+                {{ item.scheduled_at.strftime('%Y-%m-%d %H:%M') }}
+                · {{ item.status }}
+                {% if item.location %} · {{ item.location }}{% endif %}
+              </div>
+            {% endfor %}
+          </div>
+        {% endif %}
+        <form method="post" action="{{ url_for('schedule_interview', app_id=app.id) }}" class="row g-2">
+          <div class="col-md-3">
+            <input type="datetime-local" name="scheduled_at" class="form-control form-control-sm" required>
+          </div>
+          <div class="col-md-3">
+            <input type="text" name="location" class="form-control form-control-sm" placeholder="Location or meeting link">
+          </div>
+          <div class="col-md-4">
+            <input type="text" name="note" class="form-control form-control-sm" placeholder="Short note">
+          </div>
+          <div class="col-md-2">
+            <button class="btn btn-sm btn-primary w-100">Propose</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+{% else %}
+  <div class="card fade-up">
+    <div class="card-body text-center text-muted">No applications yet.</div>
+  </div>
+{% endfor %}
+{% endblock %}

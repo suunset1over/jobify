@@ -1,0 +1,199 @@
+{% extends 'base.html' %}
+{% block title %}Apply to {{ offer.title }}{% endblock %}
+
+{% block content %}
+<style>
+  .apply-layout {
+    display: grid;
+    grid-template-columns: minmax(0, .9fr) minmax(0, 1.1fr);
+    gap: 24px;
+    align-items: start;
+  }
+  .job-snapshot {
+    position: sticky;
+    top: 96px;
+  }
+  .letter-toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .letter-meta {
+    min-height: 42px;
+  }
+  .gap-meter {
+    height: 12px;
+    background: var(--surface-soft);
+    border-radius: 999px;
+    overflow: hidden;
+  }
+  .gap-meter span {
+    display: block;
+    width: var(--coverage);
+    height: 100%;
+    background: linear-gradient(90deg, #ef4444, #f59e0b, #22c55e);
+    border-radius: inherit;
+  }
+  .gap-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 10px;
+  }
+  @media (max-width: 768px) {
+    .gap-grid { grid-template-columns: 1fr; }
+  }
+  @media (max-width: 992px) {
+    .apply-layout { grid-template-columns: 1fr; }
+    .job-snapshot { position: static; }
+  }
+</style>
+
+<div class="d-flex flex-wrap justify-content-between align-items-end gap-2 mb-3 fade-up">
+  <div>
+    <h2 class="mb-1">Apply for {{ offer.title }}</h2>
+    <p class="text-muted mb-0">Generate a tailored cover letter, review it, then submit your application.</p>
+  </div>
+  <a href="{{ url_for('job_list') }}" class="btn btn-outline-secondary btn-sm">Back to Jobs</a>
+</div>
+
+<div class="apply-layout">
+  <aside class="card job-snapshot fade-up">
+    <div class="card-body">
+      <h5 class="card-title">{{ offer.title }}</h5>
+      <p class="card-text">{{ offer.description }}</p>
+      <p class="mb-1"><strong>Location:</strong> {{ offer.city }}, {{ offer.country }}</p>
+      <p class="mb-1"><strong>Category:</strong> {{ offer.category }}</p>
+      <p class="mb-3"><strong>Experience:</strong> {{ offer.min_experience }} yr</p>
+      <div class="mb-2"><strong>Required skills</strong></div>
+      {% for skill in offer.required_skills.split(',') if skill.strip() %}
+        <span class="badge bg-light text-dark border me-1 mb-1">{{ skill.strip() }}</span>
+      {% endfor %}
+
+      <hr>
+
+      <div class="d-flex justify-content-between align-items-center mb-2">
+        <strong>Skill Gap Dashboard</strong>
+        <span class="badge
+          {% if gap_report.priority == 'low' %}bg-success
+          {% elif gap_report.priority == 'medium' %}bg-warning text-dark
+          {% else %}bg-danger
+          {% endif %}
+        ">
+          {{ gap_report.priority_label }}
+        </span>
+      </div>
+      <div class="gap-meter mb-2" style="--coverage: {{ gap_report.coverage }}%;">
+        <span></span>
+      </div>
+      <div class="text-muted small mb-3">
+        {{ gap_report.matched_count }}/{{ gap_report.required_count }} required skills matched · {{ gap_report.score }}% overall fit
+      </div>
+
+      <div class="gap-grid">
+        <div>
+          <div class="small fw-semibold mb-1">Matched</div>
+          {% if gap_report.matched %}
+            {% for skill in gap_report.matched %}
+              <span class="badge bg-success me-1 mb-1">{{ skill }}</span>
+            {% endfor %}
+          {% else %}
+            <span class="text-muted small">No direct matches yet.</span>
+          {% endif %}
+        </div>
+        <div>
+          <div class="small fw-semibold mb-1">Missing</div>
+          {% if gap_report.missing %}
+            {% for skill in gap_report.missing %}
+              <span class="badge bg-warning text-dark me-1 mb-1">{{ skill }}</span>
+            {% endfor %}
+          {% else %}
+            <span class="text-muted small">No required gaps.</span>
+          {% endif %}
+        </div>
+        <div>
+          <div class="small fw-semibold mb-1">Optional</div>
+          {% if gap_report.optional %}
+            {% for skill in gap_report.optional %}
+              <span class="badge bg-info text-dark me-1 mb-1">{{ skill }}</span>
+            {% endfor %}
+          {% else %}
+            <span class="text-muted small">No related extras detected.</span>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <form method="post" class="card fade-up">
+    <div class="card-body">
+      <div class="letter-toolbar mb-3">
+        <div>
+          <h5 class="mb-1">Cover Letter</h5>
+          <div class="text-muted small">Personalize before submitting.</div>
+        </div>
+        <button type="button" id="generateLetterBtn" class="btn btn-outline-dark">
+          Generate with AI
+        </button>
+      </div>
+
+      <div id="letterMeta" class="letter-meta alert alert-info d-none"></div>
+
+      <div class="mb-3">
+        <textarea name="cover_letter" id="coverLetter" class="form-control" rows="13" required></textarea>
+      </div>
+      <button type="submit" class="btn btn-primary w-100">Submit Application</button>
+    </div>
+  </form>
+</div>
+
+<script>
+  const button = document.getElementById("generateLetterBtn");
+  const textarea = document.getElementById("coverLetter");
+  const meta = document.getElementById("letterMeta");
+
+  button.addEventListener("click", async () => {
+    button.disabled = true;
+    button.textContent = "Generating...";
+    meta.classList.add("d-none");
+
+    try {
+      const response = await fetch("{{ url_for('cover_letter_generator', job_id=offer.id) }}", {
+        method: "POST",
+        headers: {"Content-Type": "application/json"}
+      });
+      const data = await response.json();
+      if (data.cover_letter) textarea.value = data.cover_letter;
+
+      meta.replaceChildren();
+      const title = document.createElement("strong");
+      title.textContent = data.ai_used ? "AI generated cover letter" : "Local cover letter generated";
+      meta.appendChild(title);
+      if (data.error) {
+        const status = document.createElement("div");
+        status.className = "small mt-1";
+        status.textContent = data.error;
+        meta.appendChild(status);
+      }
+      if (data.tips && data.tips.length) {
+        const list = document.createElement("ul");
+        list.className = "mb-0 mt-2";
+        data.tips.forEach((tip) => {
+          const item = document.createElement("li");
+          item.textContent = tip;
+          list.appendChild(item);
+        });
+        meta.appendChild(list);
+      }
+      meta.classList.remove("d-none");
+    } catch (error) {
+      meta.textContent = "Cover letter generation is unavailable right now.";
+      meta.classList.remove("d-none");
+    } finally {
+      button.disabled = false;
+      button.textContent = "Generate with AI";
+    }
+  });
+</script>
+{% endblock %}

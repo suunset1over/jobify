@@ -1,0 +1,17 @@
+# Python venv
+venv/
+.env
+.DS_Store
+*.code-search
+instance/
+uploads/
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+# Jupyter Notebook checkpoints
+.ipynb_checkpoints
+# Distribution / packaging
+build/
+dist/
+*.egg-info/

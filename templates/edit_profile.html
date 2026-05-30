@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+{% block title %}Edit Profile{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+  <h2 class="mb-4">Edit Your Profile</h2>
+  <form method="post" enctype="multipart/form-data" class="card">
+    <div class="card-body">
+      <div class="row g-3">
+        <div class="col-md-6">
+          <label for="name" class="form-label">Name</label>
+          <input type="text" class="form-control" id="name" name="name" placeholder="Your full name" value="{{ current_user.name or '' }}">
+        </div>
+
+        <div class="col-md-6">
+          <label for="email" class="form-label">Email</label>
+          <input type="email" class="form-control" id="email" name="email" placeholder="you@example.com" value="{{ current_user.email or '' }}">
+        </div>
+
+        {% if current_user.role == 'jobseeker' %}
+          <div class="col-md-6">
+            <label for="phone" class="form-label">Phone</label>
+            <input type="text" class="form-control" id="phone" name="phone" value="{{ profile.phone if profile and profile.phone else '' }}">
+          </div>
+          <div class="col-md-3">
+            <label for="desired_salary_gross" class="form-label">Desired salary gross</label>
+            <input type="number" min="0" class="form-control" id="desired_salary_gross" name="desired_salary_gross" value="{{ profile.desired_salary_gross if profile and profile.desired_salary_gross else '' }}">
+          </div>
+          <div class="col-md-3">
+            <label for="desired_salary_net" class="form-label">Desired salary net</label>
+            <input type="number" min="0" class="form-control" id="desired_salary_net" name="desired_salary_net" value="{{ profile.desired_salary_net if profile and profile.desired_salary_net else '' }}">
+          </div>
+          <div class="col-12">
+            <label for="summary" class="form-label">Professional summary</label>
+            <textarea class="form-control" id="summary" name="summary" rows="3">{{ profile.summary if profile and profile.summary else '' }}</textarea>
+          </div>
+        {% endif %}
+
+        <div class="col-12">
+          <label for="picture" class="form-label">Profile Picture</label>
+          {% if current_user.picture_path %}
+            <div class="mb-2">
+              <img src="{{ url_for('serve_upload', filename=current_user.picture_path) }}" alt="Current picture" style="max-width: 150px; max-height: 150px; object-fit: cover;" class="rounded">
+            </div>
+          {% endif %}
+          <input class="form-control" type="file" id="picture" name="picture" accept="image/*">
+          <div class="form-text">Upload a new profile image to replace the existing one.</div>
+        </div>
+      </div>
+
+      <div class="mt-4">
+        <button type="submit" class="btn btn-primary">Save Changes</button>
+        <a href="{{ url_for('dashboard_recruiter') if current_user.role=='recruiter' else url_for('dashboard_jobseeker') }}"
+           class="btn btn-secondary ms-2">Cancel</a>
+      </div>
+    </div>
+  </form>
+</div>
+{% endblock %}

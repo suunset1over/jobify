@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% block title %}Admin Dashboard{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+  <h1>📊 Admin Dashboard</h1>
+
+  <div class="row mb-4">
+    <div class="col"><div class="p-3 bg-primary text-white rounded">Total Users: {{ total_users }}</div></div>
+    <div class="col"><div class="p-3 bg-success text-white rounded">Total Jobs: {{ total_jobs }}</div></div>
+    <div class="col"><div class="p-3 bg-warning text-dark rounded">Applications: {{ total_applications }}</div></div>
+  </div>
+
+  <div class="row mb-4">
+    <div class="col"><div class="p-3 bg-info text-white rounded">Recruiters: {{ recruiters }}</div></div>
+    <div class="col"><div class="p-3 bg-secondary text-white rounded">Jobseekers: {{ jobseekers }}</div></div>
+  </div>
+
+  <h3>Jobs by Category:</h3>
+  <ul>
+    {% for cat, count in jobs_by_category %}
+      <li>{{ cat }} — {{ count }}</li>
+    {% endfor %}
+  </ul>
+
+  <h3>Export</h3>
+  <a href="{{ url_for('export_users') }}" class="btn btn-outline-secondary">Export Users (CSV)</a>
+
+  <h3 class="mt-4">Latest Users</h3>
+  <ul>
+    {% for user in latest_users %}
+      <li>{{ user.username }} — {{ user.role }}</li>
+    {% endfor %}
+  </ul>
+
+  <h3>Latest Jobs</h3>
+  <ul>
+    {% for job in latest_jobs %}
+      <li>{{ job.title }} — {{ job.city }}</li>
+    {% endfor %}
+  </ul>
+</div>
+{% endblock %}

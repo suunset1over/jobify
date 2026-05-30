@@ -1,0 +1,40 @@
+<form method="POST" enctype="multipart/form-data">
+
+  <input type="text" name="name" placeholder="Full Name" required><br>
+  <input type="email" name="email" placeholder="Email" required><br>
+  <input type="text" name="phone" placeholder="Phone" required><br>
+
+  <label>Text color:</label>
+  <input type="color" name="text_color" value="#000000"><br>
+
+  <label>Background color:</label>
+  <input type="color" name="background_color" value="#ffffff"><br>
+
+  <label>Font Family:</label>
+  <select name="font_family">
+    <option value="Arial">Arial</option>
+    <option value="Times New Roman">Times New Roman</option>
+    <option value="Verdana">Verdana</option>
+    <option value="Roboto">Roboto</option>
+  </select><br>
+
+  <textarea name="profile" placeholder="Professional summary"></textarea><br>
+  <input type="text" name="skills" placeholder="Skills (comma-separated)"><br>
+  <textarea name="experience" placeholder="Experience details"></textarea><br>
+  <textarea name="education" placeholder="Education details"></textarea><br>
+
+  <textarea name="languages" placeholder="Languages (comma-separated)"></textarea><br>
+  <textarea name="certificates" placeholder="Certificates (comma-separated)"></textarea><br>
+
+  <label>Profile Picture Shape:</label>
+  <select name="photo_shape">
+    <option value="circle">Circle</option>
+    <option value="rounded">Rounded</option>
+    <option value="square">Square</option>
+  </select><br>
+
+  <label>Profile photo:</label>
+  <input type="file" name="photo"><br>
+
+  <button type="submit">Save CV</button>
+</form>
