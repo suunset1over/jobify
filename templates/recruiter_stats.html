@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+{% block title %}Recruiter Stats{% endblock %}
+{% block content %}
+<div class="container py-4">
+  <h2 class="mb-4">📊 Application Statistics</h2>
+
+  <div class="row g-4">
+    <div class="col-md-3">
+      <div class="card shadow text-center">
+        <div class="card-body">
+          <h5>Total Jobs</h5>
+          <h2>{{ total_jobs }}</h2>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-3">
+      <div class="card shadow text-center">
+        <div class="card-body">
+          <h5>Total Applications</h5>
+          <h2>{{ total_applications }}</h2>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-3">
+      <div class="card shadow text-center">
+        <div class="card-body">
+          <h5>Acceptance Rate</h5>
+          <h2>{{ acceptance_rate|round(1) }}%</h2>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-3">
+      <div class="card shadow text-center">
+        <div class="card-body">
+          <h5>Unread Applications</h5>
+          <h2>{{ unread_apps }}</h2>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <h3 class="mt-5">Top Skills</h3>
+  <ul class="list-group">
+    {% for skill, count in top_skills %}
+      <li class="list-group-item d-flex justify-content-between">
+        {{ skill.title() }} <span class="badge bg-primary">{{ count }}</span>
+      </li>
+    {% else %}
+      <li class="list-group-item">No skills data found.</li>
+    {% endfor %}
+  </ul>
+
+</div>
+{% endblock %}

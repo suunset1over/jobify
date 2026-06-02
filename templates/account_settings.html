@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block title %}Account Settings{% endblock %}
+
+{% block content %}
+<h2 class="mb-3">Account Settings</h2>
+
+<form method="post">
+  <div class="mb-3">
+    <label for="username" class="form-label">Username</label>
+    <input  
+      type="text" 
+      id="username" 
+      name="username" 
+      value="{{ current_user.username }}" 
+      class="form-control">
+  </div>
+
+  <div class="mb-3">
+    <label for="email" class="form-label">Email</label>
+    <input  
+      type="email" 
+      id="email" 
+      name="email" 
+      value="{{ current_user.email or '' }}" 
+      class="form-control">
+  </div>
+
+  <button type="submit" class="btn btn-primary">Save Changes</button>
+</form>
+{% endblock %}

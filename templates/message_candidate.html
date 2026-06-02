@@ -1,0 +1,13 @@
+{% extends 'base.html' %}
+{% block title %}Message Candidate{% endblock %}
+{% block content %}
+<h2>Message to Candidate #{{ application.jobseeker_id }}</h2>
+<form method="post" class="mx-auto" style="max-width:600px;">
+  <div class="mb-3">
+    <label class="form-label">Message</label>
+    <textarea name="message" class="form-control" rows="4" required></textarea>
+  </div>
+  <button type="submit" class="btn btn-primary">Send</button>
+  <a href="{{ url_for('view_applications') }}" class="btn btn-secondary">Cancel</a>
+</form>
+{% endblock %}

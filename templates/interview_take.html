@@ -1,0 +1,153 @@
+{% extends "base.html" %}
+{% block title %}Interview Practice{% endblock %}
+
+{% block content %}
+<style>
+  .interview-shell {
+    display: grid;
+    grid-template-columns: minmax(0, .95fr) minmax(280px, .55fr);
+    gap: 18px;
+    align-items: start;
+  }
+  .question-card {
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 16px;
+    background: var(--surface);
+  }
+  .question-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    align-items: center;
+    margin-bottom: 10px;
+  }
+  .score-circle {
+    width: 112px;
+    aspect-ratio: 1;
+    border-radius: 50%;
+    display: grid;
+    place-items: center;
+    margin: 0 auto 14px;
+    font-size: 30px;
+    font-weight: 900;
+    background:
+      radial-gradient(circle at center, var(--surface) 57%, transparent 59%),
+      conic-gradient(var(--brand) calc(var(--score) * 1%), var(--surface-soft) 0);
+  }
+  .answer-score {
+    height: 8px;
+    border-radius: 999px;
+    background: var(--surface-soft);
+    overflow: hidden;
+  }
+  .answer-score span {
+    display: block;
+    height: 100%;
+    width: var(--score-width);
+    background: linear-gradient(90deg, #dc3545, #ffc107, #198754);
+  }
+  @media (max-width: 992px) {
+    .interview-shell { grid-template-columns: 1fr; }
+  }
+</style>
+
+<div class="d-flex flex-wrap justify-content-between align-items-end gap-2 mb-3 fade-up">
+  <div>
+    <h2 class="mb-1">Interview Practice</h2>
+    <p class="text-muted mb-0">{{ interview.job_offer.title }} · {{ interview.job_offer.city }}, {{ interview.job_offer.country }}</p>
+  </div>
+  <div class="d-flex flex-wrap gap-2">
+    <a href="{{ url_for('interview_simulator') }}" class="btn btn-outline-secondary btn-sm">All Simulations</a>
+    <span class="badge {{ 'bg-success' if interview.ai_used else 'bg-secondary' }}">
+      {{ "AI assisted" if interview.ai_used else "Local feedback" }}
+    </span>
+  </div>
+</div>
+
+<div class="interview-shell">
+  <section class="fade-up">
+    {% if feedback %}
+      <div class="card mb-3">
+        <div class="card-body">
+          <h4>Feedback Summary</h4>
+          <p class="mb-0">{{ feedback.summary }}</p>
+        </div>
+      </div>
+    {% endif %}
+
+    <form method="post">
+      <div class="d-grid gap-3">
+        {% for question in questions %}
+          {% set idx = loop.index0 %}
+          <div class="question-card">
+            <div class="question-meta">
+              <span class="badge bg-primary">Question {{ loop.index }}</span>
+              <span class="badge bg-light text-dark border">{{ question.category }}</span>
+            </div>
+            <h5>{{ question.question }}</h5>
+            <p class="text-muted small mb-3">{{ question.focus }}</p>
+            <textarea
+              name="answer_{{ idx }}"
+              class="form-control"
+              rows="5"
+              placeholder="Write your answer using situation, action, and result..."
+              {% if feedback %}readonly{% endif %}
+              required
+            >{{ answers[idx] if answers|length > idx else "" }}</textarea>
+            {% if feedback and feedback.answer_feedback|length > idx %}
+              {% set item = feedback.answer_feedback[idx] %}
+              <div class="mt-3">
+                <div class="d-flex justify-content-between small mb-1">
+                  <strong>Answer score</strong>
+                  <span>{{ item.score }}%</span>
+                </div>
+                <div class="answer-score" style="--score-width: {{ item.score }}%;"><span></span></div>
+                <p class="text-muted small mt-2 mb-0">{{ item.feedback }}</p>
+              </div>
+            {% endif %}
+          </div>
+        {% endfor %}
+      </div>
+
+      {% if not feedback %}
+        <button class="btn btn-success mt-3 w-100">Get Feedback</button>
+      {% endif %}
+    </form>
+  </section>
+
+  <aside class="card fade-up">
+    <div class="card-body">
+      {% if feedback %}
+        <div class="score-circle" style="--score: {{ feedback.score }};">{{ feedback.score }}%</div>
+        <h5>Strengths</h5>
+        <ul>
+          {% for item in feedback.strengths %}
+            <li>{{ item }}</li>
+          {% endfor %}
+        </ul>
+        <h5>Improvements</h5>
+        <ul>
+          {% for item in feedback.improvements %}
+            <li>{{ item }}</li>
+          {% endfor %}
+        </ul>
+        <h5>Next Steps</h5>
+        <ul class="mb-0">
+          {% for item in feedback.next_steps %}
+            <li>{{ item }}</li>
+          {% endfor %}
+        </ul>
+      {% else %}
+        <h5>How to Answer</h5>
+        <p class="text-muted">Use short but specific answers. Mention the situation, what you did, tools used, and the result.</p>
+        <div class="border rounded p-3 mb-3">
+          <strong>Good structure</strong>
+          <div class="text-muted small">Situation → Action → Result → Link to this job</div>
+        </div>
+        <p class="mb-0 text-muted">Your answers will be saved after feedback is generated.</p>
+      {% endif %}
+    </div>
+  </aside>
+</div>
+{% endblock %}

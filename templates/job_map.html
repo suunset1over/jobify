@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block title %}All Job Locations – Jobify.ro{% endblock %}
+
+{% block head %}
+  {{ super() }}
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+{% endblock %}
+
+{% block content %}
+<div class="container">
+  <h2 class="my-4">Map of All Job Locations</h2>
+  <div id="all-job-map" style="height: 600px;"></div>
+</div>
+
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+<script>
+  const markers = {{ markers|tojson }};
+  if (markers.length) {
+    const map = L.map('all-job-map').setView(
+      [markers[0].lat, markers[0].lng],
+      5
+    );
+    L.tileLayer(
+      'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+      { attribution: '&copy; OpenStreetMap contributors' }
+    ).addTo(map);
+    markers.forEach(m => {
+      L.marker([m.lat, m.lng]).addTo(map)
+       .bindPopup(`${m.city} (${m.count} jobs)`);
+    });
+  } else {
+    document.getElementById('all-job-map')
+            .innerHTML = '<p>No job locations available.</p>';
+  }
+</script>
+{% endblock %}

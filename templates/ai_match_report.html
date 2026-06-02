@@ -1,0 +1,132 @@
+{% extends "base.html" %}
+{% block title %}AI Match Report{% endblock %}
+
+{% block content %}
+<style>
+  .fit-meter {
+    height: 10px;
+    background: var(--surface-soft);
+    border-radius: 999px;
+    overflow: hidden;
+  }
+  .fit-meter span {
+    display: block;
+    height: 100%;
+    width: var(--score);
+    background: linear-gradient(90deg, #ef4444, #f59e0b, #22c55e);
+    border-radius: inherit;
+  }
+</style>
+
+<div class="d-flex justify-content-between align-items-start mb-3 fade-up">
+  <div>
+    <h2 class="mb-1">AI Match Report</h2>
+    <p class="text-muted mb-0">
+      Candidate #{{ profile.user_id }} for {{ job.title }}
+    </p>
+  </div>
+  {% if current_user.role == "recruiter" %}
+    <div class="d-flex gap-2">
+      <a href="{{ url_for('ai_status') }}" class="btn btn-outline-dark btn-sm">AI Status</a>
+      <a href="{{ url_for('view_candidates') }}" class="btn btn-outline-secondary btn-sm">Back</a>
+    </div>
+  {% else %}
+    <div class="d-flex gap-2">
+      <a href="{{ url_for('ai_status') }}" class="btn btn-outline-dark btn-sm">AI Status</a>
+      <a href="{{ url_for('dashboard_jobseeker') }}" class="btn btn-outline-secondary btn-sm">Back</a>
+    </div>
+  {% endif %}
+</div>
+
+{% if not report.ai_used %}
+  <div class="alert alert-warning">
+    {% if ai_configured %}
+      Live Gemini analysis is temporarily unavailable, so Jobify is showing local matching logic.
+      {% if report.error %}
+        <span class="d-block small mt-1">{{ report.error }}</span>
+      {% endif %}
+    {% else %}
+      Gemini is not configured, so this report uses local matching logic. Set GEMINI_API_KEY to enable AI analysis.
+    {% endif %}
+  </div>
+{% endif %}
+
+<div class="row g-3 fade-up">
+  <div class="col-md-4">
+    <div class="card shadow-sm">
+      <div class="card-body">
+        <div class="display-5 fw-bold">{{ report.score }}%</div>
+        <div class="text-muted">{{ report.recommendation }}</div>
+        <div class="fit-meter mt-3" style="--score: {{ report.score }}%;">
+          <span></span>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-8">
+    <div class="card shadow-sm">
+      <div class="card-body">
+        <h5>Summary</h5>
+        <p class="mb-0">{{ report.summary }}</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="row g-3 mt-1 fade-up">
+  <div class="col-md-6">
+    <div class="card shadow-sm h-100">
+      <div class="card-body">
+        <h5>Strengths</h5>
+        {% if report.strengths %}
+          <ul class="mb-0">
+            {% for item in report.strengths %}
+              <li>{{ item }}</li>
+            {% endfor %}
+          </ul>
+        {% else %}
+          <p class="text-muted mb-0">No clear strengths detected yet.</p>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+  <div class="col-md-6">
+    <div class="card shadow-sm h-100">
+      <div class="card-body">
+        <h5>Gaps</h5>
+        {% if report.gaps %}
+          <ul class="mb-0">
+            {% for item in report.gaps %}
+              <li>{{ item }}</li>
+            {% endfor %}
+          </ul>
+        {% else %}
+          <p class="text-muted mb-0">No major gaps detected.</p>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="card shadow-sm mt-3">
+  <div class="card-body">
+    <h5>Interview Questions</h5>
+    <ol class="mb-0">
+      {% for question in report.interview_questions %}
+        <li>{{ question }}</li>
+      {% endfor %}
+    </ol>
+  </div>
+</div>
+
+<div class="card shadow-sm mt-3 fade-up">
+  <div class="card-body">
+    <h5>Next Steps</h5>
+    <ul class="mb-0">
+      {% for step in report.next_steps %}
+        <li>{{ step }}</li>
+      {% endfor %}
+    </ul>
+  </div>
+</div>
+{% endblock %}

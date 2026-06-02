@@ -1,0 +1,424 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <title>{% block title %}Jobify.ro{% endblock %}</title>
+
+  <style>
+    :root {
+      --brand: #0f172a;
+      --brand-accent: {{ brand_color }};
+      --brand-soft: #1e3a8a;
+      --accent: #2563eb;
+      --accent-strong: #1d4ed8;
+      --success: #12805c;
+      --bg: #f4f7fb;
+      --fg: #172033;
+      --surface: #ffffff;
+      --surface-soft: #eef3f8;
+      --border: #d9e2ef;
+      --muted: #667085;
+      --shadow: 0 16px 40px rgba(15, 23, 42, .09);
+      --shadow-hover: 0 22px 54px rgba(15, 23, 42, .14);
+    }
+    body {
+      background:
+        radial-gradient(circle at top left, rgba(37, 99, 235, .08), transparent 34rem),
+        linear-gradient(180deg, #f8fafc 0%, var(--bg) 45%, #eef3f8 100%);
+      color: var(--fg);
+      font-feature-settings: "kern";
+      transition: background-color .2s ease, color .2s ease;
+    }
+    .navbar-dark {
+      background: linear-gradient(90deg, #0b1220 0%, var(--brand) 52%, #172554 100%) !important;
+      border-bottom: 1px solid rgba(255, 255, 255, .08);
+      box-shadow: 0 12px 32px rgba(15, 23, 42, .22);
+    }
+    .navbar-brand {
+      font-weight: 800;
+      letter-spacing: .01em;
+    }
+    .navbar-dark .navbar-nav .nav-link {
+      color: rgba(255, 255, 255, .76);
+      border-radius: 999px;
+      padding: .42rem .52rem;
+      white-space: nowrap;
+      font-size: .94rem;
+      transition: background-color .18s ease, color .18s ease, transform .18s ease;
+    }
+    .navbar-dark .navbar-nav .nav-link:hover,
+    .navbar-dark .navbar-nav .nav-link:focus {
+      background: rgba(255, 255, 255, .09);
+      color: #ffffff;
+      transform: translateY(-1px);
+    }
+    .app-shell {
+      padding-top: 92px;
+      padding-bottom: 42px;
+    }
+    .card, .list-group-item, .dropdown-menu, .modal-content {
+      background: var(--surface);
+      color: var(--fg);
+      border-color: var(--border);
+    }
+    .card {
+      border-radius: 8px;
+      border: 1px solid rgba(217, 226, 239, .95);
+      box-shadow: var(--shadow);
+      transform-style: preserve-3d;
+      transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease;
+    }
+    .card:hover {
+      transform: translateY(-2px);
+      border-color: rgba(37, 99, 235, .22);
+      box-shadow: var(--shadow-hover);
+    }
+    .premium-panel {
+      background:
+        linear-gradient(180deg, rgba(255, 255, 255, .96), rgba(255, 255, 255, .9)),
+        var(--surface);
+      border: 1px solid rgba(217, 226, 239, .95);
+      border-radius: 8px;
+      box-shadow: var(--shadow);
+    }
+    .section-title {
+      font-size: clamp(1.4rem, 2vw, 2rem);
+      font-weight: 800;
+      letter-spacing: 0;
+    }
+    .eyebrow {
+      color: var(--accent);
+      font-size: .74rem;
+      font-weight: 800;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+    }
+    .card-img-top, .img-fluid {
+      transition: transform .35s ease, filter .35s ease;
+    }
+    .card:hover .card-img-top {
+      transform: scale(1.025);
+      filter: saturate(1.06);
+    }
+    .card:has(.card-img-top) {
+      overflow: hidden;
+    }
+    .text-muted, .card-subtitle { color: var(--muted) !important; }
+    .form-control, .form-select, .page-link {
+      background-color: var(--surface);
+      color: var(--fg);
+      border-color: var(--border);
+      border-radius: 8px;
+    }
+    .form-control::placeholder { color: color-mix(in srgb, var(--muted) 78%, transparent); }
+    .form-control:focus, .form-select:focus {
+      background-color: var(--surface);
+      color: var(--fg);
+      border-color: var(--accent);
+      box-shadow: 0 0 0 .2rem rgba(37, 99, 235, .14);
+    }
+    .btn {
+      border-radius: 8px;
+      font-weight: 650;
+      transition: transform .16s ease, box-shadow .16s ease, background-color .16s ease, border-color .16s ease;
+    }
+    .btn:hover {
+      transform: translateY(-1px);
+    }
+    .btn-primary {
+      background: linear-gradient(180deg, var(--accent), var(--accent-strong));
+      border-color: var(--accent-strong);
+      box-shadow: 0 10px 22px rgba(37, 99, 235, .22);
+    }
+    .btn-primary:hover {
+      box-shadow: 0 14px 30px rgba(37, 99, 235, .28);
+    }
+    .btn-success {
+      background: linear-gradient(180deg, #168a64, var(--success));
+      border-color: var(--success);
+    }
+    .btn-outline-primary {
+      color: var(--accent-strong);
+      border-color: rgba(37, 99, 235, .42);
+      background: rgba(37, 99, 235, .02);
+    }
+    .btn-outline-primary:hover {
+      color: #fff;
+      background: var(--accent);
+      border-color: var(--accent);
+    }
+    .btn-outline-secondary {
+      color: #475467;
+      border-color: #cbd5e1;
+      background: rgba(255, 255, 255, .58);
+    }
+    .bg-primary {
+      background: linear-gradient(135deg, var(--brand), var(--brand-soft)) !important;
+    }
+    .text-primary {
+      color: var(--accent-strong) !important;
+    }
+    .border-primary {
+      border-color: rgba(37, 99, 235, .34) !important;
+    }
+    .badge {
+      border-radius: 999px;
+      font-weight: 750;
+      letter-spacing: 0;
+    }
+    .table {
+      --bs-table-bg: var(--surface);
+      --bs-table-color: var(--fg);
+      --bs-table-border-color: var(--border);
+    }
+    .dropdown-item { color: var(--fg); }
+    .dropdown-item:hover { background: var(--surface-soft); color: var(--fg); }
+    a:not(.btn):not(.nav-link):not(.navbar-brand):not(.dropdown-item) { color: var(--accent-strong); }
+    .alert-info { color: #16435a; background-color: #d9f3ff; border-color: #bde8f7; }
+    .leaflet-container {
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .4);
+    }
+    .fade-up {
+      animation: fadeUp .28s ease both;
+    }
+    .js-reveal {
+      opacity: 0;
+      transform: translateY(16px);
+      transition: opacity .45s ease, transform .45s ease;
+    }
+    .js-reveal.is-visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    .pulse-new {
+      animation: pulseNew 1.8s ease-in-out infinite;
+    }
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes pulseNew {
+      0%, 100% { transform: scale(1); box-shadow: 0 0 0 rgba(220, 53, 69, 0); }
+      50% { transform: scale(1.04); box-shadow: 0 0 0 5px rgba(220, 53, 69, .14); }
+    }
+    body.dark {
+      --brand: #050816;
+      --bg: #0b101b;
+      --fg: #eef3fb;
+      --surface: #141c2b;
+      --surface-soft: #1d293b;
+      --border: #2d3a4f;
+      --muted: #b8c2d2;
+      --shadow: 0 12px 34px rgba(0, 0, 0, .32);
+      --shadow-hover: 0 18px 46px rgba(0, 0, 0, .42);
+    }
+    body.dark .navbar-dark { box-shadow: 0 8px 24px rgba(0, 0, 0, .24); }
+    body.dark .btn-outline-dark {
+      color: #f4f7fb;
+      border-color: #9fb0c8;
+    }
+    body.dark .btn-outline-dark:hover {
+      color: #10151d;
+      background: #f4f7fb;
+    }
+    body.dark .alert-warning {
+      color: #ffe7a3;
+      background-color: #3a2d10;
+      border-color: #6b551b;
+    }
+    body.dark .alert-info {
+      color: #c9efff;
+      background-color: #123140;
+      border-color: #25566c;
+    }
+    body.dark .page-item.disabled .page-link {
+      background-color: var(--surface-soft);
+      color: var(--muted);
+      border-color: var(--border);
+    }
+    body.dark .bg-light {
+      background-color: var(--surface-soft) !important;
+      color: var(--fg) !important;
+      border-color: var(--border) !important;
+    }
+    body.dark a:not(.btn):not(.nav-link):not(.navbar-brand):not(.dropdown-item) {
+      color: #8fb7ff;
+    }
+    body.dark .leaflet-container { filter: brightness(.82) contrast(1.08); }
+  </style>
+</head>
+
+<body>
+
+<nav class="navbar navbar-expand-lg navbar-dark fixed-top">
+  <div class="container">
+    <a class="navbar-brand" href="{{ url_for('index') }}">Jobify.ro</a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#nav" aria-controls="nav" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div class="collapse navbar-collapse" id="nav">
+      <ul class="navbar-nav ms-auto align-items-center">
+
+        {% if current_user.is_authenticated %}
+          {% if current_user.role == 'recruiter' %}
+            <li class="nav-item"><a class="nav-link" href="{{ url_for('dashboard_recruiter') }}">Dashboard</a></li>
+            <li class="nav-item position-relative">
+              <a class="nav-link" href="{{ url_for('view_applications') }}">
+                Applications
+                {% if unread_apps %}
+                  <span class="badge bg-danger position-absolute top-0 start-100 translate-middle">{{ unread_apps }}</span>
+                {% endif %}
+              </a>
+            </li>
+            <li class="nav-item"><a class="nav-link" href="{{ url_for('view_candidates') }}">Candidates</a></li>
+            <li class="nav-item"><a class="nav-link" href="{{ url_for('interview_calendar') }}">Calendar</a></li>
+          {% else %}
+            <li class="nav-item position-relative">
+              <a class="nav-link" href="{{ url_for('dashboard_jobseeker') }}">
+                Profile
+                {% if unread_decisions %}
+                  <span class="badge bg-warning text-dark position-absolute top-0 start-100 translate-middle">{{ unread_decisions }}</span>
+                {% endif %}
+              </a>
+            </li>
+            <li class="nav-item"><a class="nav-link" href="{{ url_for('job_list') }}">Jobs</a></li>
+            <li class="nav-item"><a class="nav-link" href="{{ url_for('saved_jobs') }}">Saved</a></li>
+            <li class="nav-item"><a class="nav-link" href="{{ url_for('my_applications') }}">Applications</a></li>
+            <li class="nav-item"><a class="nav-link" href="{{ url_for('interview_calendar') }}">Calendar</a></li>
+            <li class="nav-item"><a class="nav-link" href="{{ url_for('build_cv') }}">Build CV</a></li>
+            <li class="nav-item">
+              <a class="nav-link position-relative" href="{{ url_for('interview_simulator') }}">
+                Interview
+                <span class="badge bg-danger ms-1 align-text-top" style="font-size:.58rem;">New</span>
+              </a>
+            </li>
+          {% endif %}
+
+          <li class="nav-item position-relative">
+            <a class="nav-link" href="{{ url_for('inbox') }}">
+              Inbox
+              {% if unread_count %}
+                <span class="badge bg-danger position-absolute top-0 start-100 translate-middle">{{ unread_count }}</span>
+              {% endif %}
+            </a>
+          </li>
+
+          <li class="nav-item position-relative">
+            <a class="nav-link" href="{{ url_for('notifications') }}">
+              Alerts
+              {% if notification_count %}
+                <span class="badge bg-danger position-absolute top-0 start-100 translate-middle">{{ notification_count }}</span>
+              {% endif %}
+            </a>
+          </li>
+
+          <li class="nav-item"><a class="nav-link" href="{{ url_for('article_list') }}">Articles</a></li>
+          <li class="nav-item"><a class="nav-link" href="{{ url_for('news_list') }}">News</a></li>
+
+          <li class="nav-item"><a class="nav-link" href="{{ url_for('logout') }}">Logout</a></li>
+
+          <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle" href="#" id="settingsDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">⋮</a>
+            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="settingsDropdown">
+              <li><a class="dropdown-item" href="{{ url_for('notification_settings') }}">Notification Settings</a></li>
+              <li><a class="dropdown-item" href="{{ url_for('change_password') }}">Change Password</a></li>
+              {% if current_user.twofa_secret %}
+                <li>
+                  <form method="post" action="{{ url_for('disable_2fa') }}" class="px-3 py-1">
+                    <button type="submit" class="btn btn-link text-danger p-0 w-100 text-start">Disable 2-FA</button>
+                  </form>
+                </li>
+              {% else %}
+                <li><a class="dropdown-item" href="{{ url_for('enable_2fa') }}">Enable 2-FA</a></li>
+              {% endif %}
+            </ul>
+          </li>
+
+        {% else %}
+          <li class="nav-item"><a class="nav-link" href="{{ url_for('article_list') }}">Articles</a></li>
+          <li class="nav-item"><a class="nav-link" href="{{ url_for('news_list') }}">News</a></li>
+          <li class="nav-item"><a class="nav-link" href="{{ url_for('login') }}">Login</a></li>
+          <li class="nav-item"><a class="nav-link" href="{{ url_for('register') }}">Register</a></li>
+        {% endif %}
+
+        <li class="nav-item">
+          <button id="themeToggle" class="btn btn-sm btn-outline-light ms-2">🌓</button>
+        </li>
+      </ul>
+    </div>
+  </div>
+</nav>
+
+<div class="container app-shell">
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% for category, message in messages %}
+      <div class="alert alert-{{ category }} mt-2">{{ message }}</div>
+    {% endfor %}
+  {% endwith %}
+  {% block content %}{% endblock %}
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+  if (localStorage.theme === 'dark') document.body.classList.add('dark');
+  document.getElementById('themeToggle').onclick = () => {
+    document.body.classList.toggle('dark');
+    localStorage.theme = document.body.classList.contains('dark') ? 'dark' : 'light';
+  };
+
+  document.querySelectorAll('.badge.bg-danger').forEach((badge) => {
+    if (badge.textContent.trim().toLowerCase() === 'new') badge.classList.add('pulse-new');
+  });
+
+  const revealTargets = document.querySelectorAll('.card, .fade-up, h1, h2, h3');
+  revealTargets.forEach((el, index) => {
+    el.classList.add('js-reveal');
+    el.style.transitionDelay = `${Math.min(index * 28, 220)}ms`;
+  });
+  const revealObserver = new IntersectionObserver((entries) => {
+    entries.forEach((entry) => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('is-visible');
+        revealObserver.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.12 });
+  revealTargets.forEach((el) => revealObserver.observe(el));
+
+  document.querySelectorAll('.card').forEach((card) => {
+    card.addEventListener('pointermove', (event) => {
+      if (window.matchMedia('(max-width: 768px)').matches) return;
+      const rect = card.getBoundingClientRect();
+      const x = (event.clientX - rect.left) / rect.width - 0.5;
+      const y = (event.clientY - rect.top) / rect.height - 0.5;
+      card.style.transform = `translateY(-3px) rotateX(${(-y * 2).toFixed(2)}deg) rotateY(${(x * 2).toFixed(2)}deg)`;
+    });
+    card.addEventListener('pointerleave', () => {
+      card.style.transform = '';
+    });
+  });
+
+  document.querySelectorAll('.js-count').forEach((node) => {
+    const target = Number(node.dataset.count || node.textContent || 0);
+    if (!Number.isFinite(target)) return;
+    let current = 0;
+    const steps = 28;
+    const tick = () => {
+      current += target / steps;
+      if (current >= target) {
+        node.textContent = target;
+        return;
+      }
+      node.textContent = Math.round(current);
+      requestAnimationFrame(tick);
+    };
+    requestAnimationFrame(tick);
+  });
+</script>
+</body>
+</html>

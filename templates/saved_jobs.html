@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+{% block title %}Saved Jobs{% endblock %}
+
+{% block content %}
+<div class="d-flex flex-wrap justify-content-between align-items-end gap-2 mb-3 fade-up">
+  <div>
+    <h2 class="mb-1">Saved Jobs</h2>
+    <p class="text-muted mb-0">Your shortlist of vacancies to review, compare, and apply to later.</p>
+  </div>
+  <a href="{{ url_for('job_list') }}" class="btn btn-outline-primary btn-sm">Browse Jobs</a>
+</div>
+
+{% for row in saved_jobs %}
+  {% set job = row.job_offer %}
+  {% set gap = gap_reports.get(job.id) %}
+  <div class="card mb-3 fade-up">
+    <div class="card-body">
+      <div class="d-flex flex-wrap justify-content-between align-items-start gap-2">
+        <div>
+          <h5 class="mb-1">{{ job.title }}</h5>
+          <div class="text-muted small">Saved {{ row.saved_at.strftime('%Y-%m-%d %H:%M') }}</div>
+        </div>
+        {% if match_scores.get(job.id) is not none %}
+          <span class="badge {% if match_scores[job.id] >= 75 %}bg-success{% elif match_scores[job.id] >= 45 %}bg-warning text-dark{% else %}bg-secondary{% endif %}">
+            {{ match_scores[job.id] }}% fit
+          </span>
+        {% endif %}
+      </div>
+      <p class="mt-3">{{ job.description }}</p>
+      <p class="mb-1"><strong>Location:</strong> {{ job.city }}, {{ job.country }}</p>
+      <p class="mb-1"><strong>Category:</strong> {{ job.category }}</p>
+      <p class="mb-3"><strong>Required skills:</strong> {{ job.required_skills or "Not specified" }}</p>
+      {% if gap and gap.missing %}
+        <p class="mb-3">
+          <strong>Missing skills:</strong>
+          {% for skill in gap.missing[:5] %}
+            <span class="badge bg-light text-dark border me-1">{{ skill }}</span>
+          {% endfor %}
+        </p>
+      {% endif %}
+      <div class="d-flex flex-wrap gap-2">
+        <a href="{{ url_for('apply_job', job_id=job.id) }}" class="btn btn-primary btn-sm">Apply</a>
+        <form method="post" action="{{ url_for('toggle_save_job', job_id=job.id) }}">
+          <button class="btn btn-outline-danger btn-sm">Remove</button>
+        </form>
+        <form method="post" action="{{ url_for('start_interview') }}">
+          <input type="hidden" name="job_id" value="{{ job.id }}">
+          <button class="btn btn-outline-primary btn-sm">Practice Interview</button>
+        </form>
+      </div>
+    </div>
+  </div>
+{% else %}
+  <div class="card fade-up">
+    <div class="card-body text-center">
+      <h5>No saved jobs yet</h5>
+      <p class="text-muted">Save interesting vacancies from the Jobs page and compare them here.</p>
+      <a href="{{ url_for('job_list') }}" class="btn btn-primary">Find jobs</a>
+    </div>
+  </div>
+{% endfor %}
+{% endblock %}

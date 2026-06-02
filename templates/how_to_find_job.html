@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+{% block title %}How to Find a Job – Jobify.ro{% endblock %}
+
+{% block content %}
+<!-- Hero section -->
+<div class="bg-light rounded-3 p-4 mb-5">
+  <h1 class="display-5 fw-bold">How to Find a Job in 7 Steps</h1>
+  <p class="fs-4 text-muted">A concise guide by Jobify.ro to help you land your next role faster.</p>
+</div>
+
+<div class="row">
+  <!-- Article body -->
+  <div class="col-md-8">
+    <h2 id="1">1. Define Your Goal</h2>
+    <p>Clarify your target role, industry, salary expectations and preferred locations.</p>
+
+    <h2 id="2">2. Polish Your CV</h2>
+    <p>Tailor your resume for each vacancy. Use our <a href="{{ url_for('build_cv') }}">CV Builder</a> to generate a polished PDF.</p>
+
+    <h2 id="3">3. Optimize Online Profiles</h2>
+    <p>Update LinkedIn, GitHub or portfolio sites with recent projects and achievements.</p>
+
+    <h2 id="4">4. Search & Filter Jobs</h2>
+    <p>Use <a href="{{ url_for('job_list') }}">Jobify.ro’s search</a>, filter by city & category, and save interesting roles.</p>
+
+    <h2 id="5">5. Write Focused Cover Letters</h2>
+    <p>In 3 short paragraphs tell the recruiter why you fit the role and how you’ll add value.</p>
+
+    <h2 id="6">6. Prepare for Interviews</h2>
+    <p>Research the company, rehearse common questions, and have STAR-formatted stories ready.</p>
+
+    <h2 id="7">7. Follow-Up & Track</h2>
+    <p>Politely follow up after interviews and use our “Applications” tab to track status.</p>
+
+    <hr>
+    <p class="text-muted">© {{ 2025 }} Jobify.ro — Feel free to share this guide.</p>
+  </div>
+
+  <!-- Table of contents sidebar -->
+  <aside class="col-md-4 d-none d-md-block ps-lg-5">
+    <div class="position-sticky" style="top:100px;">
+      <h6 class="text-uppercase text-muted">Contents</h6>
+      <ul class="list-unstyled small">
+        <li><a href="#1" class="text-decoration-none">Define Your Goal</a></li>
+        <li><a href="#2" class="text-decoration-none">Polish Your CV</a></li>
+        <li><a href="#3" class="text-decoration-none">Optimize Profiles</a></li>
+        <li><a href="#4" class="text-decoration-none">Search & Filter Jobs</a></li>
+        <li><a href="#5" class="text-decoration-none">Cover Letters</a></li>
+        <li><a href="#6" class="text-decoration-none">Interview Prep</a></li>
+        <li><a href="#7" class="text-decoration-none">Follow-Up & Track</a></li>
+      </ul>
+      <img src="{{ url_for('static', filename='img/how_to_find_job.png') }}"
+           alt="Mascot holding plant" class="img-fluid mt-3">
+    </div>
+  </aside>
+</div>
+{% endblock %}

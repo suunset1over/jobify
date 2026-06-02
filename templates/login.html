@@ -1,0 +1,338 @@
+{% extends "base.html" %}
+{% block title %}Login – Jobify.ro{% endblock %}
+
+{% block content %}
+<style>
+  .landing-hero {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(320px, .78fr);
+    gap: 22px;
+    align-items: stretch;
+    margin-bottom: 22px;
+  }
+  .hero-panel {
+    min-height: 300px;
+    padding: clamp(26px, 4vw, 42px);
+    color: #fff;
+    background:
+      linear-gradient(135deg, rgba(15, 23, 42, .98), rgba(30, 64, 175, .9));
+    border-radius: 8px;
+    box-shadow: 0 18px 44px rgba(15, 23, 42, .18);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    overflow: hidden;
+    position: relative;
+  }
+  .hero-panel::after {
+    content: "";
+    position: absolute;
+    right: -80px;
+    top: -90px;
+    width: 260px;
+    height: 260px;
+    border-radius: 50%;
+    background: rgba(96, 165, 250, .18);
+  }
+  .hero-panel h1 {
+    font-size: clamp(2.4rem, 5vw, 4.2rem);
+    line-height: 1;
+    font-weight: 800;
+    letter-spacing: 0;
+  }
+  .hero-stats {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 10px;
+  }
+  .hero-stat {
+    padding: 13px;
+    border: 1px solid rgba(255, 255, 255, .18);
+    background: rgba(255, 255, 255, .08);
+    border-radius: 8px;
+    backdrop-filter: blur(8px);
+  }
+  .login-panel {
+    padding: 26px;
+  }
+  .feature-strip {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 16px;
+  }
+  .feature-icon {
+    width: 46px;
+    height: 46px;
+    border-radius: 8px;
+    display: grid;
+    place-items: center;
+    background: #e8efff;
+    color: var(--accent);
+    font-weight: 900;
+  }
+  .content-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 18px;
+  }
+  .trust-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 14px;
+  }
+  .trust-card {
+    padding: 22px;
+    text-align: center;
+  }
+  .trust-number {
+    font-size: clamp(1.8rem, 3vw, 2.7rem);
+    font-weight: 850;
+    color: var(--brand);
+    line-height: 1;
+  }
+  .story-band {
+    display: grid;
+    grid-template-columns: minmax(0, .9fr) minmax(0, 1.1fr);
+    gap: 20px;
+    align-items: center;
+    padding: clamp(24px, 4vw, 38px);
+    background: linear-gradient(135deg, #0f172a, #1e3a8a);
+    color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 18px 44px rgba(15, 23, 42, .18);
+  }
+  .story-list {
+    display: grid;
+    gap: 12px;
+  }
+  .story-item {
+    padding: 14px 16px;
+    border: 1px solid rgba(255, 255, 255, .16);
+    border-radius: 8px;
+    background: rgba(255, 255, 255, .08);
+  }
+  @media (max-width: 992px) {
+    .landing-hero, .feature-strip, .content-grid, .story-band { grid-template-columns: 1fr; }
+    .trust-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .hero-stats { grid-template-columns: 1fr; }
+  }
+  @media (max-width: 576px) {
+    .trust-grid { grid-template-columns: 1fr; }
+  }
+</style>
+
+<div class="container py-4">
+
+  <!-- HERO -->
+  <section class="landing-hero fade-up">
+    <div class="hero-panel">
+      <div>
+        <div class="eyebrow text-white-50 mb-3">Recruitment intelligence platform</div>
+        <h1 class="mb-3">Jobify.ro</h1>
+        <p class="fs-4 mb-0 text-white-50">A smarter job-search platform for candidates, recruiters, and admin analytics.</p>
+      </div>
+      <div class="hero-stats mt-4">
+        <div class="hero-stat">
+          <div class="fs-3 fw-bold js-count" data-count="{{ vacancies }}">{{ vacancies }}</div>
+          <div class="small text-white-50">active vacancies</div>
+        </div>
+        <div class="hero-stat">
+          <div class="fs-3 fw-bold">AI</div>
+          <div class="small text-white-50">matching support</div>
+        </div>
+        <div class="hero-stat">
+          <div class="fs-3 fw-bold">360</div>
+          <div class="small text-white-50">candidate workflow</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="premium-panel login-panel">
+      <div class="eyebrow mb-2">Secure access</div>
+      <h2 class="mb-2">Sign in</h2>
+      <p class="text-muted mb-4">Continue to your candidate, recruiter, or admin workspace.</p>
+      <form method="post">
+        <div class="mb-3">
+          <label class="form-label">Username</label>
+          <input name="username" class="form-control form-control-lg" required>
+        </div>
+        <div class="mb-4">
+          <label class="form-label">Password</label>
+          <input name="password" type="password" class="form-control form-control-lg" required>
+        </div>
+        <button class="btn btn-primary btn-lg w-100">Login</button>
+      </form>
+      <div class="d-flex gap-2 mt-3">
+        <a href="{{ url_for('register') }}" class="btn btn-outline-primary flex-fill">Create Account</a>
+        <a href="{{ url_for('article_list') }}" class="btn btn-outline-secondary flex-fill">Explore</a>
+      </div>
+    </div>
+  </section>
+
+  <section class="trust-grid mb-4 fade-up">
+    <div class="card trust-card">
+      <div class="trust-number js-count" data-count="1200">1200</div>
+      <div class="text-muted mt-2">people supported in their job search</div>
+    </div>
+    <div class="card trust-card">
+      <div class="trust-number js-count" data-count="{{ vacancies }}">{{ vacancies }}</div>
+      <div class="text-muted mt-2">active vacancies available now</div>
+    </div>
+    <div class="card trust-card">
+      <div class="trust-number js-count" data-count="18">18</div>
+      <div class="text-muted mt-2">countries with open opportunities</div>
+    </div>
+    <div class="card trust-card">
+      <div class="trust-number">AI</div>
+      <div class="text-muted mt-2">matching, CV feedback, and interview practice</div>
+    </div>
+  </section>
+
+  <section class="feature-strip mb-4">
+    <a href="{{ url_for('how_to_find_job') }}" class="text-decoration-none">
+      <div class="card h-100">
+        <div class="card-body d-flex gap-3 align-items-center">
+          <div class="feature-icon">01</div>
+          <div>
+            <h5 class="fw-bold mb-1">Career Guide</h5>
+            <p class="mb-0 text-muted">A structured guide for finding a job.</p>
+          </div>
+        </div>
+      </div>
+    </a>
+
+    <div class="card h-100">
+      <div class="card-body d-flex gap-3 align-items-center">
+        <div class="feature-icon">CV</div>
+        <div>
+          <h5 class="fw-bold mb-1">CV Builder</h5>
+          <p class="mb-0 text-muted">Create a polished CV with templates.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="card h-100">
+      <div class="card-body d-flex gap-3 align-items-center">
+        <div class="feature-icon">AI</div>
+        <div>
+          <h5 class="fw-bold mb-1">Smart Matching</h5>
+          <p class="mb-0 text-muted">Compare skills, education, and experience.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="story-band mb-5 fade-up">
+    <div>
+      <div class="eyebrow text-white-50 mb-2">Why candidates stay</div>
+      <h2 class="mb-3">More than a job board</h2>
+      <p class="mb-0 text-white-50">
+        Jobify.ro connects vacancies, CV quality, applications, interviews, recruiter messages, and market insights in one workflow.
+      </p>
+    </div>
+    <div class="story-list">
+      <div class="story-item">
+        <strong>Personalized matches</strong>
+        <div class="text-white-50 small">Candidates see jobs sorted by profile fit, skill gaps, and readiness.</div>
+      </div>
+      <div class="story-item">
+        <strong>Recruiter workflow</strong>
+        <div class="text-white-50 small">Recruiters can shortlist candidates, invite them to jobs, and schedule interviews.</div>
+      </div>
+      <div class="story-item">
+        <strong>Career growth tools</strong>
+        <div class="text-white-50 small">CV Builder, cover letters, interview simulation, and job market insights help candidates improve.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- MINI-MAP -->
+  <div class="card mb-5">
+    <div class="card-body">
+      <div class="d-flex flex-wrap justify-content-between align-items-end gap-2 mb-3">
+        <div>
+          <div class="eyebrow">Live market map</div>
+          <h3 class="mb-0">Vacancies by Location</h3>
+        </div>
+        <span class="badge bg-light text-dark border">{{ vacancies }} open roles</span>
+      </div>
+      <div id="publicMap" style="height:340px"></div>
+    </div>
+  </div>
+
+  <!-- NEWS teaser -->
+  <hr class="my-4">
+  <div class="d-flex justify-content-between align-items-end mb-3">
+    <div>
+      <div class="eyebrow">Platform updates</div>
+      <h3 class="mb-0">Latest News</h3>
+    </div>
+    <a href="{{ url_for('news_list') }}" class="text-decoration-none">All news →</a>
+  </div>
+  <div class="content-grid mb-5">
+    {% for n in latest_news %}
+        <div class="card h-100">
+          {% if n.image_url %}
+            <img src="{{ n.image_url }}" class="card-img-top" style="height:140px;object-fit:cover">
+          {% endif %}
+          <div class="card-body">
+            <span class="badge bg-warning text-dark mb-2">News</span>
+            <h5 class="card-title">{{ n.title }}</h5>
+            <p class="card-text">{{ n.teaser }}</p>
+          </div>
+          <a href="{{ url_for('news_detail', nid=n.id) }}" class="stretched-link"></a>
+        </div>
+    {% endfor %}
+  </div>
+
+  <!-- ARTICLES teaser -->
+  <hr class="my-4">
+  <div class="d-flex justify-content-between align-items-end mb-3">
+    <div>
+      <div class="eyebrow">Career resources</div>
+      <h3 class="mb-0">Latest Articles</h3>
+    </div>
+    <a href="{{ url_for('article_list') }}">See all articles →</a>
+  </div>
+  <div class="content-grid">
+    {% for art in latest_articles %}
+        <div class="card h-100">
+          {% if art.image_url %}
+            <img src="{{ art.image_url }}" class="card-img-top" alt="{{ art.title }}">
+          {% endif %}
+          <div class="card-body">
+            <span class="badge bg-info mb-2">Article</span>
+            <h5 class="card-title">{{ art.title }}</h5>
+            <p class="card-text">{{ art.teaser }}</p>
+            <a href="{{ url_for('article_detail', aid=art.id) }}" class="stretched-link"></a>
+          </div>
+        </div>
+    {% endfor %}
+  </div>
+</div>
+
+<!-- Leaflet for mini-map -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+  const miniMap = L.map('publicMap',{scrollWheelZoom:false}).setView([46,25],6);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:18})
+    .addTo(miniMap);
+
+  const markers = {{ markers|tojson }};
+  const bounds = [];
+  markers.forEach((marker) => {
+    bounds.push([marker.lat, marker.lng]);
+    L.circleMarker([marker.lat, marker.lng],{
+      radius: Math.min(18, 7 + marker.count),
+      fillColor:"#2563eb",
+      color:"#0f172a",
+      weight: 2,
+      fillOpacity:0.72
+    })
+    .addTo(miniMap)
+    .bindPopup(`<strong>${marker.city}</strong><br>${marker.count} job(s)`);
+  });
+  if (bounds.length) miniMap.fitBounds(bounds, { padding: [24, 24], maxZoom: 6 });
+</script>
+{% endblock %}

@@ -1,0 +1,165 @@
+{% extends 'base.html' %}
+{% block title %}Inbox{% endblock %}
+
+{% block content %}
+<style>
+  .inbox-layout {
+    display: grid;
+    grid-template-columns: minmax(260px, .42fr) minmax(0, 1fr);
+    gap: 18px;
+  }
+  .conversation-row {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    gap: 14px;
+    align-items: center;
+    padding: 14px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--surface);
+    color: var(--fg);
+    text-decoration: none;
+    transition: transform .18s ease, border-color .18s ease;
+  }
+  .conversation-row:hover {
+    color: var(--fg);
+    transform: translateY(-1px);
+    border-color: color-mix(in srgb, var(--brand) 35%, var(--border));
+  }
+  .conversation-actions {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 6px;
+  }
+  .avatar {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    object-fit: cover;
+    display: grid;
+    place-items: center;
+    font-weight: 800;
+  }
+  .status-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    display: inline-block;
+    background: #94a3b8;
+  }
+  .status-dot.online { background: #22c55e; }
+  .last-message {
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  @media (max-width: 992px) {
+    .inbox-layout { grid-template-columns: 1fr; }
+  }
+</style>
+
+<div class="d-flex flex-wrap justify-content-between align-items-end gap-2 mb-3 fade-up">
+  <div>
+    <h2 class="mb-1">Inbox</h2>
+    <p class="text-muted mb-0">Messages, attachments, read receipts, reactions, and scheduled sending.</p>
+  </div>
+</div>
+
+<div class="inbox-layout">
+  <section class="card fade-up">
+    <div class="card-body">
+      <h5 class="mb-3">Conversations</h5>
+      <div class="d-grid gap-2">
+        {% for user in partners %}
+          {% set meta = conversation_meta[user.id] %}
+          {% set last = meta.last %}
+          <div>
+            <a href="{{ url_for('chat', uid=user.id) }}" class="conversation-row">
+              {% if user.picture_path %}
+                <img src="{{ url_for('serve_upload', filename=user.picture_path) }}" class="avatar">
+              {% else %}
+                <div class="avatar bg-primary text-white">{{ (user.name or user.username or "U")[0]|upper }}</div>
+              {% endif %}
+              <div class="min-w-0">
+                <div class="d-flex align-items-center gap-2">
+                  <strong>{{ user.name or user.username }}</strong>
+                  <span class="status-dot {{ 'online' if meta.online else '' }}"></span>
+                  <small class="text-muted">{{ "Online" if meta.online else "Offline" }}</small>
+                </div>
+                <div class="text-muted small">{{ user.role.title() }} · {{ user.email or user.username }}</div>
+                {% if last %}
+                  <div class="last-message small mt-1">
+                    {% if last.deleted_at %}
+                      <span class="text-muted">Message deleted</span>
+                    {% elif last.scheduled_for and last.scheduled_for > now %}
+                      <span class="text-warning">Scheduled for {{ last.scheduled_for.strftime("%d %b %H:%M") }}</span>
+                    {% elif last.attachment_original %}
+                      Attachment: {{ last.attachment_original }}
+                    {% else %}
+                      {{ last.body }}
+                    {% endif %}
+                  </div>
+                {% endif %}
+              </div>
+              <div class="text-end">
+                {% if meta.unread %}
+                  <span class="badge bg-danger">{{ meta.unread }}</span>
+                {% endif %}
+                {% if user.id in blocked_ids %}
+                  <span class="badge bg-secondary d-block mt-1">Blocked</span>
+                {% endif %}
+              </div>
+            </a>
+            <div class="conversation-actions">
+              {% if user.id in blocked_ids %}
+                <form method="post" action="{{ url_for('unblock_user', uid=user.id) }}" onsubmit="return confirm('Unblock {{ user.username }}?');">
+                  <button type="submit" class="btn btn-sm btn-outline-success">Unblock</button>
+                </form>
+              {% else %}
+                <form method="post" action="{{ url_for('block_user', uid=user.id) }}" onsubmit="return confirm('Block {{ user.username }}?');">
+                  <button type="submit" class="btn btn-sm btn-outline-danger">Block</button>
+                </form>
+              {% endif %}
+            </div>
+          </div>
+        {% else %}
+          <div class="alert alert-info mb-0">You have no conversations yet.</div>
+        {% endfor %}
+      </div>
+    </div>
+  </section>
+
+  <aside class="card fade-up">
+    <div class="card-body">
+      <h5>Messaging Tools</h5>
+      <div class="row g-3">
+        <div class="col-md-6">
+          <div class="border rounded p-3 h-100">
+            <strong>Reactions</strong>
+            <p class="text-muted small mb-0">React quickly to useful or important messages.</p>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="border rounded p-3 h-100">
+            <strong>Scheduled Send</strong>
+            <p class="text-muted small mb-0">Prepare a message now and deliver it later.</p>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="border rounded p-3 h-100">
+            <strong>Read Receipts</strong>
+            <p class="text-muted small mb-0">See when your message was read.</p>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="border rounded p-3 h-100">
+            <strong>Files & Photos</strong>
+            <p class="text-muted small mb-0">Attach CVs, images, notes, or small documents.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </aside>
+</div>
+{% endblock %}

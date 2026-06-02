@@ -1,0 +1,141 @@
+{% extends "base.html" %}
+{% block title %}Interview Simulation{% endblock %}
+
+{% block content %}
+<style>
+  .interview-hero {
+    display: grid;
+    grid-template-columns: minmax(0, 1.2fr) minmax(260px, .8fr);
+    gap: 18px;
+    align-items: stretch;
+  }
+  .job-choice {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 14px;
+    align-items: center;
+    padding: 16px 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .job-choice:last-child { border-bottom: 0; padding-bottom: 0; }
+  .match-chip {
+    min-width: 70px;
+    text-align: center;
+    border-radius: 999px;
+    padding: 7px 10px;
+    font-weight: 800;
+    background: color-mix(in srgb, var(--brand) 12%, var(--surface));
+    color: var(--fg);
+    border: 1px solid color-mix(in srgb, var(--brand) 28%, var(--border));
+  }
+  .step-list {
+    display: grid;
+    gap: 10px;
+  }
+  .step-item {
+    display: grid;
+    grid-template-columns: 34px minmax(0, 1fr);
+    gap: 10px;
+    align-items: start;
+  }
+  .step-number {
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    display: grid;
+    place-items: center;
+    background: var(--brand);
+    color: #fff;
+    font-weight: 800;
+  }
+  @media (max-width: 992px) {
+    .interview-hero { grid-template-columns: 1fr; }
+    .job-choice { grid-template-columns: 1fr; }
+  }
+</style>
+
+<div class="interview-hero mb-4 fade-up">
+  <section class="card">
+    <div class="card-body">
+      <div class="d-flex flex-wrap justify-content-between align-items-start gap-2 mb-3">
+        <div>
+          <h2 class="mb-1">Interview Simulation <span class="badge bg-danger align-middle">New</span></h2>
+          <p class="text-muted mb-0">Choose a vacancy, answer 5 role-specific questions, then receive structured feedback.</p>
+        </div>
+        <span class="badge bg-primary">{{ "Gemini + local fallback" if ai_enabled else "Local fallback" }}</span>
+      </div>
+      {% if not profile %}
+        <div class="alert alert-warning mb-0">
+          Upload or build a CV first so the simulator can personalize interview questions.
+        </div>
+      {% else %}
+        <div class="step-list">
+          <div class="step-item">
+            <div class="step-number">1</div>
+            <div><strong>Select a job</strong><br><span class="text-muted">Questions are tailored to required skills and your profile.</span></div>
+          </div>
+          <div class="step-item">
+            <div class="step-number">2</div>
+            <div><strong>Answer 5 questions</strong><br><span class="text-muted">Motivation, technical, scenario, gap, and behavioral.</span></div>
+          </div>
+          <div class="step-item">
+            <div class="step-number">3</div>
+            <div><strong>Get feedback</strong><br><span class="text-muted">Score, strengths, improvements, and next steps are saved.</span></div>
+          </div>
+        </div>
+      {% endif %}
+    </div>
+  </section>
+
+  <aside class="card">
+    <div class="card-body">
+      <h5>Practice History</h5>
+      {% if sessions %}
+        {% for item in sessions %}
+          <div class="border-bottom py-2">
+            <div class="fw-semibold">{{ item.job_offer.title }}</div>
+            <div class="text-muted small">{{ item.status }} · {{ item.created_at.strftime("%d %b %Y") }}</div>
+            <a href="{{ url_for('take_interview', session_id=item.id) }}" class="btn btn-sm btn-outline-primary mt-2">
+              View
+            </a>
+          </div>
+        {% endfor %}
+      {% else %}
+        <p class="text-muted mb-0">No simulations yet.</p>
+      {% endif %}
+    </div>
+  </aside>
+</div>
+
+<div class="card fade-up">
+  <div class="card-body">
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+      <h4 class="mb-0">Choose Vacancy</h4>
+      <a href="{{ url_for('job_list') }}" class="btn btn-sm btn-outline-secondary">Browse jobs</a>
+    </div>
+    {% for job in jobs %}
+      <form method="post" action="{{ url_for('start_interview') }}" class="job-choice">
+        <div>
+          <div class="d-flex flex-wrap align-items-center gap-2 mb-1">
+            <h5 class="mb-0">{{ job.title }}</h5>
+            {% if match_scores.get(job.id) is not none %}
+              <span class="match-chip">{{ match_scores[job.id] }}%</span>
+            {% endif %}
+          </div>
+          <p class="mb-2 text-muted">{{ job.description }}</p>
+          <div class="small">
+            <strong>{{ job.city }}, {{ job.country }}</strong>
+            <span class="text-muted"> · {{ job.category }} · {{ job.min_experience }} yr</span>
+          </div>
+        </div>
+        <div>
+          <input type="hidden" name="job_id" value="{{ job.id }}">
+          <button class="btn btn-primary" {% if not profile %}disabled{% endif %}>Start Interview</button>
+        </div>
+      </form>
+    {% else %}
+      <p class="text-muted mb-0">No open vacancies available.</p>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}

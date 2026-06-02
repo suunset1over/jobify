@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block title %}AI Status{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-start mb-3 fade-up">
+  <div>
+    <h2 class="mb-1">AI Status</h2>
+    <p class="text-muted mb-0">Gemini integration health check without exposing the API key.</p>
+  </div>
+  <a href="{{ url_for('index') }}" class="btn btn-outline-secondary btn-sm">Back</a>
+</div>
+
+<div class="card fade-up">
+  <div class="card-body">
+    <div class="row g-3">
+      <div class="col-md-4">
+        <div class="p-3 rounded border h-100">
+          <div class="text-muted small">API key</div>
+          <div class="fs-5 fw-semibold">
+            {% if status.configured %}Configured{% else %}Missing{% endif %}
+          </div>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="p-3 rounded border h-100">
+          <div class="text-muted small">Model</div>
+          <div class="fs-5 fw-semibold">{{ status.model }}</div>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="p-3 rounded border h-100">
+          <div class="text-muted small">Live response</div>
+          <div class="fs-5 fw-semibold">
+            {% if status.ok %}Working{% else %}Unavailable{% endif %}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="alert {% if status.ok %}alert-success{% else %}alert-warning{% endif %} mt-3 mb-0">
+      {{ status.message }}
+    </div>
+  </div>
+</div>
+{% endblock %}

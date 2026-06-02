@@ -1,0 +1,132 @@
+{% extends "base.html" %}
+{% block title %}Notifications{% endblock %}
+
+{% block content %}
+<style>
+  .notification-shell {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 320px;
+    gap: 18px;
+  }
+  .notification-item {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    gap: 14px;
+    align-items: start;
+    padding: 16px;
+    border-bottom: 1px solid var(--border);
+  }
+  .notification-item:last-child {
+    border-bottom: 0;
+  }
+  .notification-dot {
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    display: grid;
+    place-items: center;
+    font-weight: 800;
+    background: var(--surface-soft);
+    color: var(--brand);
+  }
+  .notification-meta {
+    min-width: 132px;
+    text-align: right;
+  }
+  .quick-stat {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--border);
+  }
+  @media (max-width: 900px) {
+    .notification-shell { grid-template-columns: 1fr; }
+    .notification-item { grid-template-columns: auto minmax(0, 1fr); }
+    .notification-meta {
+      grid-column: 2;
+      text-align: left;
+    }
+  }
+</style>
+
+<div class="d-flex flex-wrap justify-content-between align-items-end gap-2 mb-4 fade-up">
+  <div>
+    <h1 class="mb-1">Notification Center</h1>
+    <p class="text-muted mb-0">Important updates from applications, messages, interviews, and job matches.</p>
+  </div>
+  <a href="{{ url_for('inbox') }}" class="btn btn-outline-primary btn-sm">Open Inbox</a>
+</div>
+
+<div class="notification-shell">
+  <section class="card fade-up">
+    <div class="card-body p-0">
+      {% if notifications %}
+        {% for item in notifications %}
+          <div class="notification-item">
+            <div class="notification-dot">
+              {{ item.type[0] }}
+            </div>
+            <div>
+              <div class="d-flex flex-wrap align-items-center gap-2 mb-1">
+                <span class="badge bg-light text-dark border">{{ item.type }}</span>
+                <span class="badge bg-{{ item.tone }} {% if item.tone in ['warning', 'info'] %}text-dark{% endif %}">
+                  {{ item.status }}
+                </span>
+              </div>
+              <h5 class="mb-1">{{ item.title }}</h5>
+              <p class="text-muted mb-2">{{ item.body }}</p>
+              <a href="{{ item.href }}" class="btn btn-sm btn-outline-primary">Open</a>
+            </div>
+            <div class="notification-meta text-muted small">
+              {% if item.time %}
+                {{ item.time.strftime('%Y-%m-%d') }}<br>{{ item.time.strftime('%H:%M') }}
+              {% else %}
+                Just now
+              {% endif %}
+            </div>
+          </div>
+        {% endfor %}
+      {% else %}
+        <div class="p-4 text-center">
+          <h5>No notifications yet</h5>
+          <p class="text-muted mb-0">When something important happens, it will appear here.</p>
+        </div>
+      {% endif %}
+    </div>
+  </section>
+
+  <aside>
+    <div class="card fade-up mb-3">
+      <div class="card-body">
+        <h5>Quick Summary</h5>
+        <div class="quick-stat">
+          <span>Total items</span>
+          <strong>{{ notifications|length }}</strong>
+        </div>
+        <div class="quick-stat">
+          <span>Unread / action needed</span>
+          <strong>{{ action_count }}</strong>
+        </div>
+        <div class="quick-stat">
+          <span>Messages</span>
+          <strong>{{ message_count }}</strong>
+        </div>
+        <div class="quick-stat">
+          <span>Interviews</span>
+          <strong>{{ interview_count }}</strong>
+        </div>
+      </div>
+    </div>
+
+    <div class="card fade-up">
+      <div class="card-body">
+        <h5>What appears here?</h5>
+        <p class="text-muted mb-0">
+          This page collects useful platform events in one place, so the user does not need to check every page separately.
+        </p>
+      </div>
+    </div>
+  </aside>
+</div>
+{% endblock %}

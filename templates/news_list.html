@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% block title %}News – Jobify.ro{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+  <h2 class="mb-4">Latest News</h2>
+
+  {% for item in pagination.items %}
+    <div class="card mb-3">
+      {% if item.image_url %}
+        <img src="{{ item.image_url }}" class="card-img-top" alt="{{ item.title }}">
+      {% endif %}
+      <div class="card-body">
+        <h5 class="card-title">{{ item.title }}</h5>
+        <p class="card-text">{{ item.teaser }}</p>
+        <a href="{{ url_for('news_detail', nid=item.id) }}" class="btn btn-primary">
+  Read more
+</a>
+
+      </div>
+    </div>
+  {% else %}
+    <p>No news available.</p>
+  {% endfor %}
+
+  <nav aria-label="Page" class="mt-4">
+    <ul class="pagination justify-content-center">
+      {% if pagination.has_prev %}
+        <li class="page-item">
+          <a class="page-link"
+             href="{{ url_for('news_list', page=pagination.prev_num) }}">
+            « Prev
+          </a>
+        </li>
+      {% endif %}
+      <li class="page-item disabled">
+        <span class="page-link">
+          Page {{ pagination.page }} of {{ pagination.pages }}
+        </span>
+      </li>
+      {% if pagination.has_next %}
+        <li class="page-item">
+          <a class="page-link"
+             href="{{ url_for('news_list', page=pagination.next_num) }}">
+            Next »
+          </a>
+        </li>
+      {% endif %}
+    </ul>
+  </nav>
+</div>
+{% endblock %}

@@ -1,0 +1,291 @@
+{% extends "admin_base.html" %}
+{% block title %}Admin Analytics{% endblock %}
+
+{% block content %}
+<style>
+  .admin-hero {
+    display: flex;
+    justify-content: space-between;
+    align-items: end;
+    gap: 16px;
+    margin-bottom: 20px;
+  }
+  .admin-kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 14px;
+  }
+  .analytics-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: 16px;
+  }
+  .kpi-card {
+    border-left: 4px solid var(--brand);
+  }
+  .kpi-value {
+    font-size: 2rem;
+    font-weight: 800;
+    line-height: 1;
+  }
+  .metric-bar {
+    height: 9px;
+    border-radius: 999px;
+    background: var(--surface-soft);
+    overflow: hidden;
+  }
+  .metric-bar span {
+    display: block;
+    height: 100%;
+    width: var(--value);
+    border-radius: inherit;
+    background: var(--brand);
+  }
+  .activity-chart {
+    display: grid;
+    grid-template-columns: repeat(7, minmax(0, 1fr));
+    align-items: end;
+    gap: 10px;
+    height: 190px;
+    padding-top: 18px;
+  }
+  .activity-col {
+    display: grid;
+    grid-template-rows: 1fr auto;
+    gap: 8px;
+    height: 100%;
+    text-align: center;
+  }
+  .activity-bar {
+    align-self: end;
+    min-height: 8px;
+    height: var(--height);
+    border-radius: 8px 8px 2px 2px;
+    background: linear-gradient(180deg, var(--brand), #86a9ff);
+  }
+  .activity-label {
+    font-size: .75rem;
+    color: var(--muted);
+  }
+  .status-pill {
+    min-width: 88px;
+    text-align: center;
+  }
+  @media (max-width: 992px) {
+    .admin-kpi-grid, .analytics-grid { grid-template-columns: 1fr 1fr; }
+  }
+  @media (max-width: 576px) {
+    .admin-hero { align-items: start; flex-direction: column; }
+    .admin-kpi-grid, .analytics-grid { grid-template-columns: 1fr; }
+  }
+</style>
+
+<div class="admin-hero fade-up">
+  <div>
+    <h1 class="mb-1">Admin Analytics Dashboard</h1>
+    <p class="text-muted mb-0">Platform overview for users, vacancies, applications, messages, and interviews.</p>
+  </div>
+  <div class="d-flex flex-wrap gap-2">
+    <a href="{{ url_for('export_users') }}" class="btn btn-outline-secondary btn-sm">Export Users CSV</a>
+    <a href="{{ url_for('admin_logout') }}" class="btn btn-outline-danger btn-sm">Admin Logout</a>
+  </div>
+</div>
+
+<div class="admin-kpi-grid mb-4 fade-up">
+  <div class="card kpi-card">
+    <div class="card-body">
+      <div class="text-muted small">Total Users</div>
+      <div class="kpi-value">{{ total_users }}</div>
+      <div class="small text-muted">{{ active_users }} active in last 7 days</div>
+    </div>
+  </div>
+  <div class="card kpi-card">
+    <div class="card-body">
+      <div class="text-muted small">Open Jobs</div>
+      <div class="kpi-value">{{ total_jobs }}</div>
+      <div class="small text-muted">{{ recruiters }} recruiters posting jobs</div>
+    </div>
+  </div>
+  <div class="card kpi-card">
+    <div class="card-body">
+      <div class="text-muted small">Applications</div>
+      <div class="kpi-value">{{ total_applications }}</div>
+      <div class="small text-muted">{{ application_acceptance }}% accepted</div>
+    </div>
+  </div>
+  <div class="card kpi-card">
+    <div class="card-body">
+      <div class="text-muted small">Platform Activity</div>
+      <div class="kpi-value">{{ total_messages }}</div>
+      <div class="small text-muted">{{ total_interviews }} interviews · {{ total_saved_jobs }} saved jobs</div>
+    </div>
+  </div>
+</div>
+
+<div class="analytics-grid mb-4">
+  <div class="card fade-up">
+    <div class="card-body">
+      <h5>User Roles</h5>
+      <div class="mb-3">
+        <div class="d-flex justify-content-between small mb-1">
+          <span>Jobseekers</span>
+          <span>{{ jobseekers }} users · {{ user_role_jobseekers }}%</span>
+        </div>
+        <div class="metric-bar" style="--value: {{ user_role_jobseekers }}%;"><span></span></div>
+      </div>
+      <div>
+        <div class="d-flex justify-content-between small mb-1">
+          <span>Recruiters</span>
+          <span>{{ recruiters }} users · {{ user_role_recruiters }}%</span>
+        </div>
+        <div class="metric-bar" style="--value: {{ user_role_recruiters }}%;"><span></span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card fade-up">
+    <div class="card-body">
+      <h5>Application Status</h5>
+      <div class="d-flex flex-wrap gap-2 mb-3">
+        <span class="badge bg-warning text-dark status-pill">Pending {{ pending_apps }}</span>
+        <span class="badge bg-success status-pill">Accepted {{ accepted_apps }}</span>
+        <span class="badge bg-danger status-pill">Rejected {{ rejected_apps }}</span>
+      </div>
+      <div class="mb-3">
+        <div class="d-flex justify-content-between small mb-1">
+          <span>Pending rate</span>
+          <span>{{ application_pending }}%</span>
+        </div>
+        <div class="metric-bar" style="--value: {{ application_pending }}%;"><span></span></div>
+      </div>
+      <div>
+        <div class="d-flex justify-content-between small mb-1">
+          <span>Acceptance rate</span>
+          <span>{{ application_acceptance }}%</span>
+        </div>
+        <div class="metric-bar" style="--value: {{ application_acceptance }}%;"><span></span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="analytics-grid mb-4">
+  <div class="card fade-up">
+    <div class="card-body">
+      <h5>Applications in the Last 7 Days</h5>
+      <div class="activity-chart">
+        {% for label in days %}
+          {% set count = app_activity[loop.index0] %}
+          {% set height = (count / max_activity * 100) if max_activity else 0 %}
+          <div class="activity-col">
+            <div class="activity-bar" title="{{ count }} applications" style="--height: {{ height }}%;"></div>
+            <div class="activity-label">{{ label }}<br><strong>{{ count }}</strong></div>
+          </div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+
+  <div class="card fade-up">
+    <div class="card-body">
+      <h5>Top Job Categories</h5>
+      {% for category, count in jobs_by_category[:8] %}
+        <div class="mb-3">
+          <div class="d-flex justify-content-between small mb-1">
+            <span>{{ category or "Other" }}</span>
+            <span>{{ count }} jobs</span>
+          </div>
+          <div class="metric-bar" style="--value: {{ (count / max_category * 100)|round }}%;"><span></span></div>
+        </div>
+      {% else %}
+        <p class="text-muted mb-0">No jobs posted yet.</p>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+
+<div class="analytics-grid mb-4">
+  <div class="card fade-up">
+    <div class="card-body">
+      <h5>Most Active Cities</h5>
+      {% for city, count in jobs_by_city %}
+        <div class="mb-3">
+          <div class="d-flex justify-content-between small mb-1">
+            <span>{{ city or "Unknown" }}</span>
+            <span>{{ count }} jobs</span>
+          </div>
+          <div class="metric-bar" style="--value: {{ (count / max_city * 100)|round }}%;"><span></span></div>
+        </div>
+      {% else %}
+        <p class="text-muted mb-0">No city data yet.</p>
+      {% endfor %}
+    </div>
+  </div>
+
+  <div class="card fade-up">
+    <div class="card-body">
+      <h5>Top Recruiters</h5>
+      {% for recruiter in top_recruiters %}
+        <div class="d-flex justify-content-between align-items-center border-bottom py-2">
+          <span>{{ recruiter.name }}</span>
+          <span class="badge bg-primary">{{ recruiter.jobs }} jobs</span>
+        </div>
+      {% else %}
+        <p class="text-muted mb-0">No recruiter activity yet.</p>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+
+<div class="analytics-grid mb-4">
+  <div class="card fade-up">
+    <div class="card-body">
+      <h5>Recent Applications</h5>
+      {% for app_row in recent_applications %}
+        <div class="d-flex justify-content-between align-items-start gap-2 border-bottom py-2">
+          <div>
+            <div class="fw-semibold">{{ app_row.job_offer.title }}</div>
+            <div class="text-muted small">Candidate #{{ app_row.jobseeker_id }} · {{ app_row.applied_on.strftime('%Y-%m-%d %H:%M') }}</div>
+          </div>
+          <span class="badge {% if app_row.status == 'Accepted' %}bg-success{% elif app_row.status == 'Rejected' %}bg-danger{% else %}bg-warning text-dark{% endif %}">
+            {{ app_row.status }}
+          </span>
+        </div>
+      {% else %}
+        <p class="text-muted mb-0">No applications yet.</p>
+      {% endfor %}
+    </div>
+  </div>
+
+  <div class="card fade-up">
+    <div class="card-body">
+      <h5>Recent Platform Items</h5>
+      <h6 class="text-muted small text-uppercase mt-2">Latest Users</h6>
+      {% for user in latest_users %}
+        <div class="d-flex justify-content-between border-bottom py-2">
+          <span>{{ user.name or user.username }}</span>
+          <span class="badge bg-light text-dark border">{{ user.role }}</span>
+        </div>
+      {% endfor %}
+
+      <h6 class="text-muted small text-uppercase mt-3">Latest Jobs</h6>
+      {% for job in latest_jobs %}
+        <div class="d-flex justify-content-between border-bottom py-2">
+          <span>{{ job.title }}</span>
+          <span class="text-muted small">{{ job.city }}</span>
+        </div>
+      {% endfor %}
+
+      <h6 class="text-muted small text-uppercase mt-3">Latest Interviews</h6>
+      {% for interview in recent_interviews %}
+        <div class="d-flex justify-content-between border-bottom py-2">
+          <span>{{ interview.application.job_offer.title }}</span>
+          <span class="badge bg-info text-dark">{{ interview.status }}</span>
+        </div>
+      {% else %}
+        <p class="text-muted mb-0">No interviews scheduled yet.</p>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+{% endblock %}

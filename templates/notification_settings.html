@@ -1,0 +1,151 @@
+{% extends "base.html" %}
+{% block title %}Notification Settings{% endblock %}
+
+{% block content %}
+<style>
+  .settings-grid {
+    display: grid;
+    grid-template-columns: minmax(0, .9fr) minmax(0, 1.1fr);
+    gap: 18px;
+  }
+  .setting-row {
+    display: flex;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 14px 0;
+    border-bottom: 1px solid var(--border);
+  }
+  @media (max-width: 900px) {
+    .settings-grid { grid-template-columns: 1fr; }
+  }
+</style>
+
+<div class="d-flex flex-wrap justify-content-between align-items-end gap-2 mb-4 fade-up">
+  <div>
+    <div class="eyebrow">Preferences</div>
+    <h1 class="mb-1">Notification Settings</h1>
+    <p class="text-muted mb-0">Choose when Jobify.ro should duplicate platform notifications by email.</p>
+  </div>
+  <a href="{{ url_for('notifications') }}" class="btn btn-outline-primary btn-sm">Notification Center</a>
+</div>
+
+<div class="settings-grid">
+  <section class="card fade-up">
+    <div class="card-body">
+      <h5>Email Verification</h5>
+      <p class="text-muted">Email notifications stay disabled until the address is verified.</p>
+
+      <form method="post" class="mb-3">
+        <input type="hidden" name="action" value="save_email">
+        <label class="form-label">Email address</label>
+        <div class="input-group">
+          <input type="email" name="email" class="form-control" value="{{ current_user.email or '' }}" placeholder="you@example.com">
+          <button class="btn btn-outline-primary">Save</button>
+        </div>
+      </form>
+
+      <div class="mb-3">
+        {% if current_user.email %}
+          {% if current_user.email_verified %}
+            <span class="badge bg-success">Verified</span>
+          {% else %}
+            <span class="badge bg-warning text-dark">Not verified</span>
+          {% endif %}
+          <span class="text-muted ms-2">{{ current_user.email }}</span>
+        {% else %}
+          <span class="badge bg-secondary">No email set</span>
+        {% endif %}
+      </div>
+
+      <form method="post" class="mb-3">
+        <input type="hidden" name="action" value="send_code">
+        <button class="btn btn-primary w-100" {% if not current_user.email %}disabled{% endif %}>Send Verification Code</button>
+      </form>
+
+      <form method="post">
+        <input type="hidden" name="action" value="verify_code">
+        <label class="form-label">Verification code</label>
+        <div class="input-group">
+          <input name="code" class="form-control" maxlength="6" placeholder="6-digit code">
+          <button class="btn btn-success">Verify</button>
+        </div>
+      </form>
+
+      {% if not mail_configured %}
+        <div class="alert alert-warning mt-3 mb-0">
+          Email SMTP is not configured yet. Add MAIL settings to .env to send real emails.
+        </div>
+      {% endif %}
+    </div>
+  </section>
+
+  <section class="card fade-up">
+    <div class="card-body">
+      <h5>Email Notification Types</h5>
+      <p class="text-muted">Platform notifications are always available. Email copies are optional.</p>
+
+      <form method="post">
+        <input type="hidden" name="action" value="save_preferences">
+
+        <div class="form-check form-switch mb-3">
+          <input class="form-check-input" type="checkbox" role="switch" id="emailEnabled"
+                 name="email_notifications_enabled"
+                 {% if current_user.email_notifications_enabled %}checked{% endif %}
+                 {% if not current_user.email_verified %}disabled{% endif %}>
+          <label class="form-check-label fw-semibold" for="emailEnabled">Duplicate notifications by email</label>
+          {% if not current_user.email_verified %}
+            <div class="form-text">Verify your email first to enable this option.</div>
+          {% endif %}
+        </div>
+
+        <div class="setting-row">
+          <div>
+            <strong>Job invitations</strong>
+            <div class="text-muted small">When a recruiter invites you to apply for a vacancy.</div>
+          </div>
+          <input class="form-check-input" type="checkbox" name="job_invitations"
+                 {% if current_user.notify_email_job_invitations %}checked{% endif %}>
+        </div>
+
+        <div class="setting-row">
+          <div>
+            <strong>Application decisions</strong>
+            <div class="text-muted small">When your application is accepted or rejected.</div>
+          </div>
+          <input class="form-check-input" type="checkbox" name="application_decisions"
+                 {% if current_user.notify_email_application_decisions %}checked{% endif %}>
+        </div>
+
+        <div class="setting-row">
+          <div>
+            <strong>Interview updates</strong>
+            <div class="text-muted small">When an interview is proposed, accepted, declined, or changed.</div>
+          </div>
+          <input class="form-check-input" type="checkbox" name="interview_updates"
+                 {% if current_user.notify_email_interview_updates %}checked{% endif %}>
+        </div>
+
+        <div class="setting-row">
+          <div>
+            <strong>New applications</strong>
+            <div class="text-muted small">For recruiters: when a candidate applies to your job.</div>
+          </div>
+          <input class="form-check-input" type="checkbox" name="new_applications"
+                 {% if current_user.notify_email_new_applications %}checked{% endif %}>
+        </div>
+
+        <div class="setting-row">
+          <div>
+            <strong>New messages</strong>
+            <div class="text-muted small">Optional email copy for direct platform messages.</div>
+          </div>
+          <input class="form-check-input" type="checkbox" name="messages"
+                 {% if current_user.notify_email_messages %}checked{% endif %}>
+        </div>
+
+        <button class="btn btn-primary mt-4">Save Preferences</button>
+      </form>
+    </div>
+  </section>
+</div>
+{% endblock %}

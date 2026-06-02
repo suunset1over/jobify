@@ -1,0 +1,290 @@
+{% extends 'base.html' %}
+{% block title %}Chat with {{ other.name or other.username }}{% endblock %}
+
+{% block content %}
+<style>
+  .chat-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 320px;
+    gap: 18px;
+    align-items: start;
+  }
+  .chat-header {
+    display: flex;
+    justify-content: space-between;
+    gap: 14px;
+    align-items: center;
+  }
+  .avatar-lg {
+    width: 68px;
+    height: 68px;
+    border-radius: 50%;
+    object-fit: cover;
+    display: grid;
+    place-items: center;
+    font-weight: 900;
+    font-size: 24px;
+  }
+  .online-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    padding: 4px 10px;
+    font-size: 13px;
+  }
+  .online-pill::before {
+    content: "";
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #94a3b8;
+  }
+  .online-pill.online::before { background: #22c55e; }
+  .message-pane {
+    min-height: 430px;
+    max-height: 60vh;
+    overflow-y: auto;
+    padding: 18px;
+    background: var(--surface-soft);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+  }
+  .message-row {
+    display: flex;
+    margin-bottom: 14px;
+  }
+  .message-row.mine { justify-content: flex-end; }
+  .bubble {
+    max-width: min(680px, 78%);
+    border-radius: 8px;
+    padding: 10px 12px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    box-shadow: 0 8px 18px rgba(15, 23, 42, .05);
+  }
+  .message-row.mine .bubble {
+    background: color-mix(in srgb, var(--brand) 14%, var(--surface));
+    border-color: color-mix(in srgb, var(--brand) 28%, var(--border));
+  }
+  .message-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 8px;
+  }
+  .message-actions button,
+  .message-actions summary {
+    border: 1px solid var(--border);
+    background: var(--surface);
+    border-radius: 999px;
+    padding: 2px 8px;
+    font-size: 12px;
+    cursor: pointer;
+  }
+  .composer {
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 14px;
+    background: var(--surface);
+  }
+  @media (max-width: 992px) {
+    .chat-layout { grid-template-columns: 1fr; }
+    .bubble { max-width: 100%; }
+  }
+</style>
+
+<div class="chat-layout">
+  <main>
+    <div class="card mb-3 fade-up">
+      <div class="card-body chat-header">
+        <div class="d-flex align-items-center gap-3">
+          {% if other.picture_path %}
+            <img src="{{ url_for('serve_upload', filename=other.picture_path) }}" class="avatar-lg">
+          {% else %}
+            <div class="avatar-lg bg-primary text-white">{{ (other.name or other.username or "U")[0]|upper }}</div>
+          {% endif %}
+          <div>
+            <h2 class="mb-1">{{ other.name or other.username }}</h2>
+            <p class="mb-1 text-muted">{{ other.email or "" }} · {{ other.role.title() }}</p>
+            <span class="online-pill {{ 'online' if other_online else '' }}">
+              {{ "Online now" if other_online else "Offline" }}
+            </span>
+          </div>
+        </div>
+        <a href="{{ url_for('inbox') }}" class="btn btn-outline-secondary btn-sm">Inbox</a>
+      </div>
+    </div>
+
+    <div class="message-pane mb-3 fade-up" id="messagePane">
+      {% for msg in messages %}
+        {% set mine = msg.sender_id == current_user.id %}
+        {% set scheduled = msg.scheduled_for and msg.scheduled_for > now %}
+        <div class="message-row {{ 'mine' if mine else '' }}">
+          <div class="bubble">
+            <div class="d-flex justify-content-between align-items-start gap-3">
+              <small class="text-muted">
+                {{ msg.timestamp.strftime('%d %b %Y %H:%M') }}
+                {% if scheduled %} · scheduled for {{ msg.scheduled_for.strftime('%d %b %H:%M') }}{% endif %}
+              </small>
+              {% if msg.reaction %}
+                <span class="badge bg-light text-dark border">{{ msg.reaction }}</span>
+              {% endif %}
+            </div>
+
+            {% if msg.deleted_at %}
+              <em class="text-muted">This message was deleted.</em>
+            {% else %}
+              {% if msg.body %}
+                <div class="mt-1">{{ msg.body }}</div>
+              {% endif %}
+              {% if msg.attachment_filename %}
+                {% set lower_name = msg.attachment_original|lower %}
+                <div class="mt-2">
+                  {% if lower_name.endswith('.png') or lower_name.endswith('.jpg') or lower_name.endswith('.jpeg') or lower_name.endswith('.gif') or lower_name.endswith('.webp') %}
+                    <a href="{{ url_for('chat_attachment', filename=msg.attachment_filename) }}" target="_blank">
+                      <img src="{{ url_for('chat_attachment', filename=msg.attachment_filename) }}" alt="{{ msg.attachment_original }}" class="img-fluid rounded border" style="max-height:220px;">
+                    </a>
+                  {% else %}
+                    <a href="{{ url_for('chat_attachment', filename=msg.attachment_filename, download=1) }}" class="btn btn-sm btn-outline-primary">
+                      Download {{ msg.attachment_original }}
+                    </a>
+                  {% endif %}
+                </div>
+              {% endif %}
+              {% if msg.edited_at %}
+                <div class="text-muted small mt-1">Edited {{ msg.edited_at.strftime('%d %b %H:%M') }}</div>
+              {% endif %}
+            {% endif %}
+
+            <div class="text-muted small mt-2">
+              {% if mine and not scheduled %}
+                {% if msg.is_read %}
+                  Read{% if msg.read_at %} {{ msg.read_at.strftime('%d %b %H:%M') }}{% endif %}
+                {% else %}
+                  Sent
+                {% endif %}
+              {% elif scheduled %}
+                Waiting to send
+              {% endif %}
+            </div>
+
+            {% if not msg.deleted_at %}
+              <div class="message-actions">
+                {% if not mine %}
+                  {% for reaction in ['👍', '❤️', '✅', '💡'] %}
+                    <form method="post" action="{{ url_for('react_message', message_id=msg.id) }}">
+                      <input type="hidden" name="reaction" value="{{ reaction }}">
+                      <button type="submit">{{ reaction }}</button>
+                    </form>
+                  {% endfor %}
+                {% endif %}
+                {% if mine %}
+                  <details>
+                    <summary>Edit</summary>
+                    <form method="post" action="{{ url_for('edit_message', message_id=msg.id) }}" class="mt-2">
+                      <textarea name="body" class="form-control form-control-sm mb-2" rows="2">{{ msg.body }}</textarea>
+                      <button class="btn btn-sm btn-primary">Save</button>
+                    </form>
+                  </details>
+                  <form method="post" action="{{ url_for('delete_message', message_id=msg.id) }}" onsubmit="return confirm('Delete this message?');">
+                    <button type="submit">Delete</button>
+                  </form>
+                {% endif %}
+              </div>
+            {% endif %}
+          </div>
+        </div>
+      {% else %}
+        <p class="text-muted mb-0">No messages yet. Start the conversation below.</p>
+      {% endfor %}
+    </div>
+
+    <form method="post" enctype="multipart/form-data" class="composer fade-up">
+      <label class="form-label">Message</label>
+      <textarea name="body" class="form-control mb-2" rows="3" placeholder="Type your message..." autofocus></textarea>
+      <div class="row g-2 align-items-end">
+        <div class="col-md-5">
+          <label class="form-label small">Attach file or photo</label>
+          <input type="file" name="attachment" class="form-control form-control-sm">
+        </div>
+        <div class="col-md-4">
+          <label class="form-label small">Schedule send</label>
+          <input type="datetime-local" name="scheduled_for" class="form-control form-control-sm">
+        </div>
+        <div class="col-md-3">
+          <button class="btn btn-primary w-100">Send</button>
+        </div>
+      </div>
+    </form>
+  </main>
+
+  <aside class="card fade-up">
+    <div class="card-body">
+      <h5>Contact Profile</h5>
+      <div class="mb-3">
+        <strong>{{ other.name or other.username }}</strong>
+        <div class="text-muted small">{{ other.role.title() }}</div>
+      </div>
+      <div class="border-bottom py-2">
+        <span class="text-muted">Email</span><br>
+        {{ other.email or "Not provided" }}
+      </div>
+      {% if other.role == 'jobseeker' %}
+        {% set profile = profile_context.profile %}
+        <div class="border-bottom py-2">
+          <span class="text-muted">Phone</span><br>
+          {{ profile.phone if profile and profile.phone else "Not provided" }}
+        </div>
+        <div class="border-bottom py-2">
+          <span class="text-muted">Desired salary</span><br>
+          {% if profile and (profile.desired_salary_gross or profile.desired_salary_net) %}
+            {% if profile.desired_salary_gross %}Gross: {{ profile.desired_salary_gross }}{% endif %}
+            {% if profile.desired_salary_gross and profile.desired_salary_net %} · {% endif %}
+            {% if profile.desired_salary_net %}Net: {{ profile.desired_salary_net }}{% endif %}
+          {% else %}
+            Not provided
+          {% endif %}
+        </div>
+        <div class="border-bottom py-2">
+          <span class="text-muted">Skills</span><br>
+          {% if profile and profile.skills %}
+            {{ profile.skills }}
+          {% else %}
+            Not provided
+          {% endif %}
+        </div>
+        {% if profile and profile.cv_path %}
+          <a href="{{ url_for('serve_upload', filename=profile.cv_path) }}" class="btn btn-sm btn-outline-primary mt-3">
+            Download CV
+          </a>
+        {% endif %}
+      {% else %}
+        <div class="border-bottom py-2">
+          <span class="text-muted">Phone</span><br>
+          Not provided
+        </div>
+        <h6 class="mt-3">Recruiter Jobs</h6>
+        {% for job in profile_context.jobs[:5] %}
+          <div class="border rounded p-2 mb-2">
+            <strong>{{ job.title }}</strong>
+            <div class="text-muted small">{{ job.city }}, {{ job.country }}</div>
+            <a href="{{ url_for('apply_job', job_id=job.id) }}" class="small">View job</a>
+          </div>
+        {% else %}
+          <p class="text-muted mb-0">No active jobs listed.</p>
+        {% endfor %}
+      {% endif %}
+
+      <hr>
+      <p class="text-muted small mb-0">You can edit or delete your own messages. Read receipts appear after the other user opens the chat.</p>
+    </div>
+  </aside>
+</div>
+
+<script>
+  const pane = document.getElementById("messagePane");
+  if (pane) pane.scrollTop = pane.scrollHeight;
+</script>
+{% endblock %}
